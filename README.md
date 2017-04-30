@@ -9,6 +9,13 @@ Kotlin Networking - An elegant networking library written in Kotlin
 
 # This project is under development
 
+### About Kotlin Networking Library
+Kotlin Networking Library is a powerful library for doing any type of networking in Android applications based on Kotlin or any Kotlin Project which is made on top of [OkHttp Networking Layer](http://square.github.io/okhttp/).
+
+Kotlin Networking Library takes care of each and everything. So you don't have to do anything, just make request and listen for the response.
+
+Networking Library for Android written in Kotlin
+
 [Check out Mindorks awesome open source projects here](https://mindorks.com/open-source-projects)
 
 ### License
