@@ -37,10 +37,9 @@ class MainActivity : AppCompatActivity() {
                 .addHeaders("key", "value")
                 .build()
                 .getResponse { result, error ->
-                    if (error == 0L) {
-                        Log.d(TAG, result.toString())
-                    } else {
-                        Log.d(TAG, error.toString())
+                    when (error) {
+                        0L -> Log.d(TAG, result.toString())
+                        else -> Log.d(TAG, error.toString())
                     }
                 }
     }
