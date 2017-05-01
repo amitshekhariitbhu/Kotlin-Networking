@@ -26,4 +26,9 @@ class Progress : Serializable {
     var currentBytes: Long = 0
     var totalBytes: Long = 0
 
+    constructor(currentBytes: Long, totalBytes: Long) {
+        this.currentBytes = currentBytes
+        this.totalBytes = totalBytes
+    }
+
 }

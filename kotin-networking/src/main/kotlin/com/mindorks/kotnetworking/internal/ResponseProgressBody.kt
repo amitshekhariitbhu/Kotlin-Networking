@@ -25,18 +25,17 @@ import java.io.IOException
 /**
  * Created by amitshekhar on 01/05/17.
  */
-class ResponseProgressBody : ResponseBody {
+class ResponseProgressBody(private val responseBody: ResponseBody, progressCallback: ((bytesDownloaded: Long, totalBytes: Long) -> Unit)?) : ResponseBody() {
 
     private var bufferedSource: BufferedSource? = null
-    private val responseBody: ResponseBody
     private var progressHandler: DownloadProgressHandler? = null
 
-    constructor(responseBody: ResponseBody, progressCallback: ((bytesDownloaded: Long, totalBytes: Long) -> Unit)?) {
-        this.responseBody = responseBody
-        progressCallback?.let {
-            progressHandler = DownloadProgressHandler(progressCallback)
+    init {
+        if (progressCallback != null) {
+            this.progressHandler = DownloadProgressHandler(progressCallback)
         }
     }
+
 
     override fun contentLength(): Long = responseBody.contentLength()
 
