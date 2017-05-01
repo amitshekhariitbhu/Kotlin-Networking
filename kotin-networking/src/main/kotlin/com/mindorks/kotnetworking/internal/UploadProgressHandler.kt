@@ -25,13 +25,7 @@ import com.mindorks.kotnetworking.common.Progress
 /**
  * Created by amitshekhar on 01/05/17.
  */
-class UploadProgressHandler : Handler {
-
-    val progressCallback: ((bytesUploaded: Long, totalBytes: Long) -> Unit)
-
-    constructor(progressCallback: ((bytesUploaded: Long, totalBytes: Long) -> Unit)) : super(Looper.getMainLooper()) {
-        this.progressCallback = progressCallback
-    }
+class UploadProgressHandler(val progressCallback: ((bytesUploaded: Long, totalBytes: Long) -> Unit)) : Handler(Looper.getMainLooper()) {
 
     override fun handleMessage(msg: Message?) {
         when (msg?.what) {
