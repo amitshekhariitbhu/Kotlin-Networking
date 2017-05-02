@@ -27,6 +27,7 @@ class KotError : Exception {
     var errorCode = 0
     var errorDetail: String? = null
     var response: Response? = null
+        private set
 
     constructor()
 
