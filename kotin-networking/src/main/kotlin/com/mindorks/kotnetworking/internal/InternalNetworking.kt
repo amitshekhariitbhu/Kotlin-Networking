@@ -17,7 +17,9 @@
 package com.mindorks.kotnetworking.internal
 
 import com.mindorks.kotnetworking.error.KotError
+import com.mindorks.kotnetworking.request.KotRequest
 import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.Response
 import java.util.concurrent.TimeUnit
 
@@ -38,17 +40,23 @@ class InternalNetworking private constructor() {
                 .build()
 
         @Throws(KotError::class)
-        fun makeSimpleRequestAndGetResponse(): Response {
+        fun makeSimpleRequestAndGetResponse(kotRequest: KotRequest): Response? {
+
+            var okHttpRequest: Request
+
+            var okHttpResponse: Response? = null
+
+
+            return okHttpResponse
+        }
+
+        @Throws(KotError::class)
+        fun makeDownloadRequestAndGetResponse(): Response? {
             TODO("Add Logic")
         }
 
         @Throws(KotError::class)
-        fun makeDownloadRequestAndGetResponse(): Response {
-            TODO("Add Logic")
-        }
-
-        @Throws(KotError::class)
-        fun makeUploadRequestAndGetResponse(): Response {
+        fun makeUploadRequestAndGetResponse(): Response? {
             TODO("Add Logic")
         }
 
