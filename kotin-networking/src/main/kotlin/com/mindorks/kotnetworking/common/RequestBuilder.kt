@@ -16,6 +16,7 @@
 
 package com.mindorks.kotnetworking.common
 
+import com.mindorks.kotnetworking.request.KotRequest
 import okhttp3.OkHttpClient
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
@@ -62,5 +63,7 @@ interface RequestBuilder {
     fun setOkHttpClient(okHttpClient: OkHttpClient): RequestBuilder
 
     fun setUserAgent(userAgent: String): RequestBuilder
+
+    fun build(): KotRequest
 
 }
