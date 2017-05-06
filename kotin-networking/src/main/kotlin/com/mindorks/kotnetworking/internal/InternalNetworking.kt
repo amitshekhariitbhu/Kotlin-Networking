@@ -16,11 +16,14 @@
 
 package com.mindorks.kotnetworking.internal
 
+import com.mindorks.kotnetworking.common.KotConstants
+import com.mindorks.kotnetworking.common.Method
 import com.mindorks.kotnetworking.error.KotError
 import com.mindorks.kotnetworking.request.KotRequest
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 /**
@@ -31,6 +34,7 @@ class InternalNetworking private constructor() {
     companion object {
 
         var okHttpClient: OkHttpClient = defaultOkHttpClient()
+        var userAgent: String? = null
 
         fun defaultOkHttpClient(): OkHttpClient = OkHttpClient()
                 .newBuilder()
@@ -42,10 +46,34 @@ class InternalNetworking private constructor() {
         @Throws(KotError::class)
         fun makeSimpleRequestAndGetResponse(kotRequest: KotRequest): Response? {
 
-            var okHttpRequest: Request
+            val okHttpRequest: Request
+            val okHttpResponse: Response?
 
-            var okHttpResponse: Response? = null
+            try {
+                val builder: Request.Builder = Request.Builder().url(kotRequest.getFormattedUrl())
+                addHeadersToRequestBuilder(builder, kotRequest)
 
+                when (kotRequest.method) {
+                    Method.GET -> builder.get()
+                    else -> {
+                    }
+                }
+
+                kotRequest.cacheControl?.let {
+                    builder.cacheControl(kotRequest.cacheControl)
+                }
+                okHttpRequest = builder.build()
+
+                if (kotRequest.okHttpClient != null)
+                    kotRequest.call = kotRequest.okHttpClient!!.newBuilder().cache(okHttpClient.cache()).build().newCall(okHttpRequest)
+                else
+                    kotRequest.call = okHttpClient.newCall(okHttpRequest)
+
+                okHttpResponse = kotRequest.call!!.execute()
+
+            } catch (ioe: IOException) {
+                throw KotError(ioe)
+            }
 
             return okHttpResponse
         }
@@ -58,6 +86,20 @@ class InternalNetworking private constructor() {
         @Throws(KotError::class)
         fun makeUploadRequestAndGetResponse(): Response? {
             TODO("Add Logic")
+        }
+
+        fun addHeadersToRequestBuilder(builder: Request.Builder, kotRequest: KotRequest) {
+            if (kotRequest.userAgent != null) {
+                builder.addHeader(KotConstants.USER_AGENT, kotRequest.userAgent)
+            } else if (userAgent != null) {
+                kotRequest.userAgent = userAgent
+                builder.addHeader(KotConstants.USER_AGENT, userAgent)
+            }
+            val requestHeaders = kotRequest.getHeaders()
+            builder.headers(requestHeaders)
+            if (kotRequest.userAgent != null && !requestHeaders.names().contains(KotConstants.USER_AGENT)) {
+                builder.addHeader(KotConstants.USER_AGENT, kotRequest.userAgent)
+            }
         }
 
     }

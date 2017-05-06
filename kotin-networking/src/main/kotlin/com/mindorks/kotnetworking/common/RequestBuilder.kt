@@ -32,19 +32,19 @@ interface RequestBuilder {
 
     fun addHeaders(key: String, value: String): RequestBuilder
 
-    fun addHeaders(headerMap: Map<String, String>): RequestBuilder
+    fun addHeaders(headerMap: MutableMap<String, String>): RequestBuilder
 
     fun addHeaders(objectAny: Any): RequestBuilder
 
     fun addQueryParameter(key: String, value: String): RequestBuilder
 
-    fun addQueryParameter(queryParameterMap: Map<String, String>): RequestBuilder
+    fun addQueryParameter(queryParameterMap: MutableMap<String, String>): RequestBuilder
 
     fun addQueryParameter(objectAny: Any): RequestBuilder
 
     fun addPathParameter(key: String, value: String): RequestBuilder
 
-    fun addPathParameter(pathParameterMap: Map<String, String>): RequestBuilder
+    fun addPathParameter(pathParameterMap: MutableMap<String, String>): RequestBuilder
 
     fun addPathParameter(objectAny: Any): RequestBuilder
 

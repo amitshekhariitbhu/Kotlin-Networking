@@ -26,7 +26,7 @@ class KotResponse<T> {
 
     companion object {
         fun <T> success(result: T): KotResponse<T> = KotResponse(result)
-        fun <T> failed(error: KotError): KotResponse<T> = KotResponse(error)
+        fun failed(error: KotError): KotResponse<KotError> = KotResponse(error)
     }
 
     val result: T?

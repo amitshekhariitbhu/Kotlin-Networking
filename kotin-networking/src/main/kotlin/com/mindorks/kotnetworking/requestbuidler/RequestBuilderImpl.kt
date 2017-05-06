@@ -15,15 +15,15 @@ import java.util.concurrent.TimeUnit
  */
 abstract class RequestBuilderImpl : RequestBuilder {
 
-    protected var priority: Priority = Priority.MEDIUM
-    protected var tag: Any? = null
-    val headersMap: Map<String, String> = mutableMapOf()
-    protected val queryParameterMap: Map<String, String> = mutableMapOf()
-    protected val pathParameterMap: Map<String, String> = mutableMapOf()
-    protected var cacheControl: CacheControl? = null
-    protected var executor: Executor? = null
-    protected var okHttpClient: OkHttpClient? = null
-    protected var userAgent: String? = null
+    var priority: Priority = Priority.MEDIUM
+    var tag: Any? = null
+    val headersMap: MutableMap<String, String> = mutableMapOf()
+    val queryParameterMap: MutableMap<String, String> = mutableMapOf()
+    val pathParameterMap: MutableMap<String, String> = mutableMapOf()
+    var cacheControl: CacheControl? = null
+    var executor: Executor? = null
+    var okHttpClient: OkHttpClient? = null
+    var userAgent: String? = null
 
 
     override fun setPriority(priority: Priority): RequestBuilder {
@@ -37,47 +37,47 @@ abstract class RequestBuilderImpl : RequestBuilder {
     }
 
     override fun addHeaders(key: String, value: String): RequestBuilder {
-        headersMap.plus(Pair(key, value))
+        headersMap.put(key, value)
         return this
     }
 
-    override fun addHeaders(headerMap: Map<String, String>): RequestBuilder {
-        headersMap.plus(headerMap)
+    override fun addHeaders(headerMap: MutableMap<String, String>): RequestBuilder {
+        headersMap.putAll(headerMap)
         return this
     }
 
     override fun addHeaders(objectAny: Any): RequestBuilder {
-        ParseUtil.parserFactory?.getStringMap(objectAny)?.let { it -> headersMap.plus(it) }
+        ParseUtil.parserFactory?.getStringMap(objectAny)?.let { it -> headersMap.putAll(it) }
         return this
     }
 
     override fun addQueryParameter(key: String, value: String): RequestBuilder {
-        queryParameterMap.plus(Pair(key, value))
+        queryParameterMap.put(key, value)
         return this
     }
 
-    override fun addQueryParameter(queryParameterMap: Map<String, String>): RequestBuilder {
-        queryParameterMap.plus(queryParameterMap)
+    override fun addQueryParameter(queryParameterMap: MutableMap<String, String>): RequestBuilder {
+        this.queryParameterMap.putAll(queryParameterMap)
         return this
     }
 
     override fun addQueryParameter(objectAny: Any): RequestBuilder {
-        ParseUtil.parserFactory?.getStringMap(objectAny)?.let { it -> queryParameterMap.plus(it) }
+        ParseUtil.parserFactory?.getStringMap(objectAny)?.let { it -> queryParameterMap.putAll(it) }
         return this
     }
 
     override fun addPathParameter(key: String, value: String): RequestBuilder {
-        pathParameterMap.plus(Pair(key, value))
+        pathParameterMap.put(key, value)
         return this
     }
 
-    override fun addPathParameter(pathParameterMap: Map<String, String>): RequestBuilder {
-        this.pathParameterMap.plus(pathParameterMap)
+    override fun addPathParameter(pathParameterMap: MutableMap<String, String>): RequestBuilder {
+        this.pathParameterMap.putAll(pathParameterMap)
         return this
     }
 
     override fun addPathParameter(objectAny: Any): RequestBuilder {
-        ParseUtil.parserFactory?.getStringMap(objectAny)?.let { it -> pathParameterMap.plus(it) }
+        ParseUtil.parserFactory?.getStringMap(objectAny)?.let { it -> pathParameterMap.putAll(it) }
         return this
     }
 

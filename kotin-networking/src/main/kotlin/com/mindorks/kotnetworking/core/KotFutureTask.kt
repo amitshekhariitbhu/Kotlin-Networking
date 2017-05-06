@@ -16,6 +16,7 @@
 
 package com.mindorks.kotnetworking.core
 
+import com.mindorks.kotnetworking.common.Priority
 import com.mindorks.kotnetworking.internal.KotRunnable
 import java.util.concurrent.FutureTask
 
@@ -25,7 +26,9 @@ import java.util.concurrent.FutureTask
 class KotFutureTask(var runnable: KotRunnable) : FutureTask<KotRunnable>(runnable, null), Comparable<KotFutureTask> {
 
     override fun compareTo(other: KotFutureTask): Int {
-        return 0
+        var p1: Priority? = runnable.priority
+        var p2: Priority? = other.runnable.priority
+        return if (p1 == p2) runnable.sequence - other.runnable.sequence else p2!!.ordinal - p1!!.ordinal
     }
 
 }

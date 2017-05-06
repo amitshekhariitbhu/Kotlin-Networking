@@ -18,11 +18,15 @@ package com.mindorks.kotnetworking.internal
 
 import com.mindorks.kotnetworking.core.Core
 import com.mindorks.kotnetworking.request.KotRequest
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Created by amitshekhar on 30/04/17.
  */
 class KotRequestQueue private constructor() {
+
+    val sequenceGenerator: AtomicInteger = AtomicInteger()
+    var currentRequest: Set<KotRequest> = mutableSetOf()
 
     private object Holder {
         val INSTANCE = KotRequestQueue()
@@ -33,10 +37,31 @@ class KotRequestQueue private constructor() {
     }
 
     fun addRequest(request: KotRequest) {
-        var future = Core.instance
-                .executorSupplier
-                .forNetworkTasks()
-                .submit(KotRunnable(request))
+        synchronized(currentRequest) {
+            try {
+                currentRequest.plus(request)
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+            }
+        }
+
+        try {
+            request.sequenceNumber = getSequenceNumber()
+            var future = Core.instance
+                    .executorSupplier
+                    .forNetworkTasks()
+                    .submit(KotRunnable(request))
+        } catch (ex: Exception) {
+            ex.printStackTrace()
+        }
+    }
+
+    private fun getSequenceNumber(): Int = sequenceGenerator.incrementAndGet()
+
+    fun finish(kotRequest: KotRequest) {
+        synchronized(currentRequest) {
+            currentRequest.minus(kotRequest)
+        }
     }
 
 }

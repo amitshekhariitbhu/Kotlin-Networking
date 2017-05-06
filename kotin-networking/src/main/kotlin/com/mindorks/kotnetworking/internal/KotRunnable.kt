@@ -16,16 +16,84 @@
 
 package com.mindorks.kotnetworking.internal
 
+import com.mindorks.kotnetworking.common.KotResponse
+import com.mindorks.kotnetworking.common.Priority
+import com.mindorks.kotnetworking.common.RequestType
+import com.mindorks.kotnetworking.common.ResponseType
+import com.mindorks.kotnetworking.core.Core
+import com.mindorks.kotnetworking.error.KotError
 import com.mindorks.kotnetworking.request.KotRequest
+import com.mindorks.kotnetworking.utils.KotUtlis
+import com.mindorks.kotnetworking.utils.SourceCloseUtil
+import okhttp3.Response
 
 /**
  * Created by amitshekhar on 30/04/17.
  */
 class KotRunnable(val request: KotRequest) : Runnable {
 
+    var priority: Priority? = null
+    var sequence: Int
+
+    init {
+        priority = request.priority
+        sequence = request.sequenceNumber
+    }
+
     override fun run() {
-        // do some networking here and deliver response
-        request.deliverSuccess()
+        when (request.requestType) {
+            RequestType.SIMPLE -> executeSimpleRequest()
+            RequestType.DOWNLOAD -> executeSimpleRequest()
+            RequestType.MULTIPART -> executeSimpleRequest()
+        }
+    }
+
+    private fun executeSimpleRequest() {
+        var okHttpResponse: Response? = null
+        try {
+
+            okHttpResponse = InternalNetworking.makeSimpleRequestAndGetResponse(request)
+
+            if (okHttpResponse == null) {
+                deliverError(request, KotUtlis.getErrorForConnection(KotError()))
+                return
+            }
+
+            if (request.responseType == ResponseType.OK_HTTP_RESPONSE) {
+                request.deliverOkHttpResponse(okHttpResponse)
+            }
+
+            if (okHttpResponse.code() >= 400) {
+                deliverError(request, KotUtlis.getErrorForServerResponse(KotError(okHttpResponse),
+                        request, okHttpResponse.code()))
+                return
+            }
+
+            val kotResponse: KotResponse<*>? = request.parseResponse(okHttpResponse)
+
+            kotResponse?.let {
+                if (!kotResponse.isSuccess()) {
+                    deliverError(request, kotResponse.error!!)
+                    return
+                }
+
+                kotResponse.response = okHttpResponse as Response
+                request.deliverResponse(kotResponse)
+            }
+
+        } catch (ex: Exception) {
+            ex.printStackTrace()
+            deliverError(request, KotUtlis.getErrorForConnection(KotError(ex)))
+        } finally {
+            SourceCloseUtil.close(okHttpResponse, request)
+        }
+    }
+
+    private fun deliverError(kotRequest: KotRequest, kotError: KotError) {
+        Core.instance.executorSupplier.forMainThreadTasks().execute {
+            kotRequest.deliverError(kotError)
+            kotRequest.finish()
+        }
     }
 
 }
