@@ -16,4 +16,7 @@
 
 <resources>
     <string name="app_name">Kotlin-Networking</string>
+    <string name="get_json_object">Get As JSON Object</string>
+    <string name="get_json_array">Get As JSON Array</string>
+    <string name="get_string">Get As String</string>
 </resources>

@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~    Copyright (C) 2017 MINDORKS NEXTGEN PRIVATE LIMITED
   ~
   ~    Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,8 +25,33 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.mindorks.sample.MainActivity">
 
-    <TextView
+    <Button
+        android:id="@+id/button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!" />
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="88dp"
+        android:onClick="getAsJSONObject"
+        android:text="@string/get_json_object" />
+
+    <Button
+        android:id="@+id/button3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/button2"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="31dp"
+        android:onClick="getAsString"
+        android:text="@string/get_string" />
+
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/button"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="29dp"
+        android:onClick="getAsJSONArray"
+        android:text="@string/get_json_array" />
 </RelativeLayout>

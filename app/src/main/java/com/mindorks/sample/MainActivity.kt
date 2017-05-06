@@ -19,7 +19,9 @@ package com.mindorks.sample
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
+import android.view.View
 import com.mindorks.kotnetworking.KotNetworking
+import com.mindorks.kotnetworking.common.Priority
 
 class MainActivity : AppCompatActivity() {
 
@@ -33,13 +35,50 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        KotNetworking.get("www.example.com")
-                .addHeaders("key", "value")
+    }
+
+    fun getAsString(view: View) {
+        KotNetworking.get(ApiEndPoint.GET_JSON_OBJECT)
+                .addPathParameter("userId", "1")
+                .setTag(this)
+                .setPriority(Priority.MEDIUM)
                 .build()
-                .getResponse { result, error ->
-                    when (error) {
-                        0L -> Log.d(TAG, result.toString())
-                        else -> Log.d(TAG, error.toString())
+                .getAsString { response, error ->
+                    if (error != null) {
+                        Log.d(TAG, error.toString())
+                    } else {
+                        Log.d(TAG, response.toString())
+                    }
+                }
+    }
+
+    fun getAsJSONArray(view: View) {
+        KotNetworking.get(ApiEndPoint.GET_JSON_ARRAY)
+                .addPathParameter("pageNumber", "0")
+                .addQueryParameter("limit", "3")
+                .setTag(this)
+                .setPriority(Priority.MEDIUM)
+                .build()
+                .getAsJSONArray { response, error ->
+                    if (error != null) {
+                        Log.d(TAG, error.toString())
+                    } else {
+                        Log.d(TAG, response.toString())
+                    }
+                }
+    }
+
+    fun getAsJSONObject(view: View) {
+        KotNetworking.get(ApiEndPoint.GET_JSON_OBJECT)
+                .addPathParameter("userId", "1")
+                .setTag(this)
+                .setPriority(Priority.MEDIUM)
+                .build()
+                .getAsJSONObject { response, error ->
+                    if (error != null) {
+                        Log.d(TAG, error.toString())
+                    } else {
+                        Log.d(TAG, response.toString())
                     }
                 }
     }
