@@ -27,6 +27,7 @@ import okhttp3.*
 import okio.Okio
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.File
 import java.util.concurrent.Executor
 import java.util.concurrent.Future
 
@@ -36,8 +37,11 @@ import java.util.concurrent.Future
  */
 class KotRequest {
 
+    //region Member Variables
     var method: Method
     var url: String
+    var bodyParameterMap: MutableMap<String, String>? = null
+    var urlEncodedFormBodyParameterMap: MutableMap<String, String>? = null
     var headersMap: MutableMap<String, String>
     val queryParameterMap: MutableMap<String, String>
     val pathParameterMap: MutableMap<String, String>
@@ -57,7 +61,16 @@ class KotRequest {
     var isCancelled = false
     var isDelivered = false
     var future: Future<*>? = null
+    private var applicationJsonString: String? = null
+    private var stringBody: String? = null
+    private var file: File? = null
+    private var bytes: ByteArray? = null
+    private var customMediaType: MediaType? = null
+    private var JSON_MEDIA_TYPE = MediaType.parse("application/json; charset=utf-8")
+    private var MEDIA_TYPE_MARKDOWN = MediaType.parse("text/x-markdown; charset=utf-8")
+//endregion
 
+    //region Constructors
     constructor(getRequestBuilder: GetRequestBuilder) {
         this.method = getRequestBuilder.method
         this.url = getRequestBuilder.url
@@ -78,12 +91,25 @@ class KotRequest {
         this.url = postRequestBuilder.url
         this.priority = postRequestBuilder.priority
         this.headersMap = postRequestBuilder.headersMap
-        this.headersMap = postRequestBuilder.headersMap
         this.queryParameterMap = postRequestBuilder.queryParameterMap
         this.pathParameterMap = postRequestBuilder.pathParameterMap
+        this.bodyParameterMap = postRequestBuilder.bodyParameterMap
+        this.applicationJsonString = postRequestBuilder.applicationJsonString
+        this.urlEncodedFormBodyParameterMap = postRequestBuilder.urlEncodedFormBodyParameterMap
+        this.file = postRequestBuilder.file
+        this.bytes = postRequestBuilder.bytes
+        this.stringBody = postRequestBuilder.stringBody
+        postRequestBuilder.customContentType?.let { mediaType -> this.customMediaType = MediaType.parse(mediaType) }
         this.requestType = RequestType.SIMPLE
         this.priorityType = postRequestBuilder.priority
+        this.cacheControl = postRequestBuilder.cacheControl
+        this.executor = postRequestBuilder.executor
+        this.okHttpClient = postRequestBuilder.okHttpClient
+        this.userAgent = postRequestBuilder.userAgent
     }
+//endregion
+
+    //region Getters
 
     fun getAsJSONObject(handler: (result: JSONObject?, error: KotError?) -> Unit) {
         responseType = ResponseType.JSON_OBJECT
@@ -103,6 +129,65 @@ class KotRequest {
         KotRequestQueue.instance.addRequest(this)
     }
 
+    fun getFormattedUrl(): String {
+        var tempUrl = url
+
+        pathParameterMap.entries.forEach { entry -> tempUrl = tempUrl.replace("{${entry.key}}", entry.value) }
+
+        val urlBuilder: HttpUrl.Builder = HttpUrl.parse(tempUrl).newBuilder()
+
+        queryParameterMap.entries.forEach { entry -> urlBuilder.addQueryParameter(entry.key, entry.value) }
+
+        return urlBuilder.build().toString()
+
+    }
+
+    fun getHeaders(): Headers {
+        val builder: Headers.Builder = Headers.Builder()
+        try {
+            headersMap.entries.forEach { entry -> builder.add(entry.key, entry.value) }
+        } catch (ex: Exception) {
+            ex.printStackTrace()
+        }
+        return builder.build()
+    }
+
+    fun getRequestBody(): RequestBody {
+        if (applicationJsonString != null) {
+            if (customMediaType != null) {
+                return RequestBody.create(customMediaType, applicationJsonString)
+            }
+            return RequestBody.create(JSON_MEDIA_TYPE, applicationJsonString)
+        } else if (stringBody != null) {
+            if (customMediaType != null) {
+                return RequestBody.create(customMediaType, stringBody)
+            }
+            return RequestBody.create(MEDIA_TYPE_MARKDOWN, stringBody)
+        } else if (file != null) {
+            if (customMediaType != null) {
+                return RequestBody.create(customMediaType, file)
+            }
+            return RequestBody.create(MEDIA_TYPE_MARKDOWN, file)
+        } else if (bytes != null) {
+            if (customMediaType != null) {
+                return RequestBody.create(customMediaType, bytes)
+            }
+            return RequestBody.create(MEDIA_TYPE_MARKDOWN, bytes)
+        } else {
+            var builder: FormBody.Builder = FormBody.Builder()
+            try {
+                bodyParameterMap?.entries?.forEach { entry -> builder.add(entry.key, entry.value) }
+                urlEncodedFormBodyParameterMap?.entries?.forEach { entry -> builder.addEncoded(entry.key, entry.value) }
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+            }
+            return builder.build()
+        }
+    }
+
+//endregion
+
+    //region Delivers
     fun deliverError(kotError: KotError) {
         try {
             if (!isDelivered) {
@@ -166,7 +251,9 @@ class KotRequest {
             ex.printStackTrace()
         }
     }
+//endregion
 
+    //region Parsers
     fun parseNetworkError(kotError: KotError): KotError {
         try {
             kotError.response?.let {
@@ -220,32 +307,11 @@ class KotRequest {
 
         return null
     }
+//endregion
 
-    fun getFormattedUrl(): String {
-        var tempUrl = url
-
-        pathParameterMap.entries.forEach { entry -> tempUrl = tempUrl.replace("{${entry.key}}", entry.value) }
-
-        val urlBuilder: HttpUrl.Builder = HttpUrl.parse(tempUrl).newBuilder()
-
-        queryParameterMap.entries.forEach { entry -> urlBuilder.addQueryParameter(entry.key, entry.value) }
-
-        return urlBuilder.build().toString()
-
-    }
-
-    fun getHeaders(): Headers {
-        val builder: Headers.Builder = Headers.Builder()
-        try {
-            headersMap.entries.forEach { entry -> builder.add(entry.key, entry.value) }
-        } catch (ex: Exception) {
-            ex.printStackTrace()
-        }
-        return builder.build()
-    }
-
+    //region finisher
     fun finish() {
         KotRequestQueue.instance.finish(this)
     }
-
+//endregion
 }

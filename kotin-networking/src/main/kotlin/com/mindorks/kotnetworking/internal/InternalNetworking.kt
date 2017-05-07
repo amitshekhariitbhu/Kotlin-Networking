@@ -22,6 +22,7 @@ import com.mindorks.kotnetworking.error.KotError
 import com.mindorks.kotnetworking.request.KotRequest
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody
 import okhttp3.Response
 import java.io.IOException
 import java.util.concurrent.TimeUnit
@@ -50,11 +51,16 @@ class InternalNetworking private constructor() {
             val okHttpResponse: Response?
 
             try {
-                val builder: Request.Builder = Request.Builder().url(kotRequest.getFormattedUrl())
+                var builder: Request.Builder = Request.Builder().url(kotRequest.getFormattedUrl())
                 addHeadersToRequestBuilder(builder, kotRequest)
+                var requestBody: RequestBody? = null
 
                 when (kotRequest.method) {
                     Method.GET -> builder.get()
+                    Method.POST -> {
+                        requestBody = kotRequest.getRequestBody()
+                        builder = builder.post(requestBody)
+                    }
                     else -> {
                     }
                 }
