@@ -23,7 +23,7 @@ import com.mindorks.kotnetworking.common.ResponseType
 import com.mindorks.kotnetworking.core.Core
 import com.mindorks.kotnetworking.error.KotError
 import com.mindorks.kotnetworking.request.KotRequest
-import com.mindorks.kotnetworking.utils.KotUtlis
+import com.mindorks.kotnetworking.utils.KotUtils
 import com.mindorks.kotnetworking.utils.SourceCloseUtil
 import okhttp3.Response
 
@@ -55,7 +55,7 @@ class KotRunnable(val request: KotRequest) : Runnable {
             okHttpResponse = InternalNetworking.makeSimpleRequestAndGetResponse(request)
 
             if (okHttpResponse == null) {
-                deliverError(request, KotUtlis.getErrorForConnection(KotError()))
+                deliverError(request, KotUtils.getErrorForConnection(KotError()))
                 return
             }
 
@@ -64,7 +64,7 @@ class KotRunnable(val request: KotRequest) : Runnable {
             }
 
             if (okHttpResponse.code() >= 400) {
-                deliverError(request, KotUtlis.getErrorForServerResponse(KotError(okHttpResponse),
+                deliverError(request, KotUtils.getErrorForServerResponse(KotError(okHttpResponse),
                         request, okHttpResponse.code()))
                 return
             }
@@ -83,7 +83,7 @@ class KotRunnable(val request: KotRequest) : Runnable {
 
         } catch (ex: Exception) {
             ex.printStackTrace()
-            deliverError(request, KotUtlis.getErrorForConnection(KotError(ex)))
+            deliverError(request, KotUtils.getErrorForConnection(KotError(ex)))
         } finally {
             SourceCloseUtil.close(okHttpResponse, request)
         }

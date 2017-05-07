@@ -15,7 +15,7 @@ class SourceCloseUtil private constructor() {
         fun close(response: Response?, kotRequest: KotRequest) {
 
             if (kotRequest.responseType !== ResponseType.OK_HTTP_RESPONSE && response?.body() != null &&
-                    response?.body()?.source() != null) {
+                    response.body()?.source() != null) {
                 try {
                     response.body().source().close()
                 } catch (ignore: Exception) {

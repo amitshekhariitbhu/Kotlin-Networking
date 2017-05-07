@@ -6,7 +6,7 @@ import android.util.Log
 import android.view.View
 import com.mindorks.kotnetworking.KotNetworking
 import com.mindorks.kotnetworking.common.Priority
-import com.mindorks.sample.model.NewUser
+import com.mindorks.sample.model.User
 import org.json.JSONException
 import org.json.JSONObject
 
@@ -111,11 +111,11 @@ class PostApiTestActivity : AppCompatActivity() {
             }
 
             R.id.btn_create_new_user -> {
-                val newUser: NewUser = NewUser()
-                newUser.firstname = "aamir"
-                newUser.lastname = "khan"
+                val user: User = User()
+                user.firstname = "aamir"
+                user.lastname = "khan"
                 KotNetworking.post(ApiEndPoint.POST_CREATE_AN_USER)
-                        .addApplicationJsonBody(newUser)
+                        .addApplicationJsonBody(user)
                         .setTag(this)
                         .setPriority(Priority.MEDIUM)
                         .build()

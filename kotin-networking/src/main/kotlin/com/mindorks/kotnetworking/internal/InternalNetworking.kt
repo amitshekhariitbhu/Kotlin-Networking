@@ -53,7 +53,7 @@ class InternalNetworking private constructor() {
             try {
                 var builder: Request.Builder = Request.Builder().url(kotRequest.getFormattedUrl())
                 addHeadersToRequestBuilder(builder, kotRequest)
-                var requestBody: RequestBody? = null
+                val requestBody: RequestBody?
 
                 when (kotRequest.method) {
                     Method.GET -> builder.get()

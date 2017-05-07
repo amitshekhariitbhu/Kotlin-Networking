@@ -6,7 +6,7 @@ package com.mindorks.sample
 class ApiEndPoint {
 
     companion object {
-        val BASE_URL = "https://fierce-cove-29863.herokuapp.com"
+        private val BASE_URL = "https://fierce-cove-29863.herokuapp.com"
         val GET_JSON_ARRAY = BASE_URL + "/getAllUsers/{pageNumber}"
         val GET_JSON_OBJECT = BASE_URL + "/getAnUserDetail/{userId}"
         val CHECK_FOR_HEADER = BASE_URL + "/checkForHeader"

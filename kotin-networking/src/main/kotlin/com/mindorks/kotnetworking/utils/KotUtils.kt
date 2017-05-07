@@ -23,8 +23,10 @@ import com.mindorks.kotnetworking.request.KotRequest
 /**
  * Created by aamir on 03/05/17.
  */
-class KotUtlis {
+class KotUtils private constructor() {
+
     companion object {
+
         fun getErrorForConnection(kotError: KotError): KotError {
             kotError.errorDetail = KotConstants.CONNECTION_ERROR
             kotError.errorCode = 0
@@ -43,5 +45,7 @@ class KotUtlis {
             kotError.errorDetail = KotConstants.PARSE_ERROR
             return kotError
         }
+
     }
+
 }

@@ -22,7 +22,7 @@ import com.mindorks.kotnetworking.error.KotError
 import com.mindorks.kotnetworking.internal.KotRequestQueue
 import com.mindorks.kotnetworking.requestbuidler.GetRequestBuilder
 import com.mindorks.kotnetworking.requestbuidler.PostRequestBuilder
-import com.mindorks.kotnetworking.utils.KotUtlis
+import com.mindorks.kotnetworking.utils.KotUtils
 import okhttp3.*
 import okio.Okio
 import org.json.JSONArray
@@ -68,7 +68,7 @@ class KotRequest {
     private var customMediaType: MediaType? = null
     private var JSON_MEDIA_TYPE = MediaType.parse("application/json; charset=utf-8")
     private var MEDIA_TYPE_MARKDOWN = MediaType.parse("text/x-markdown; charset=utf-8")
-//endregion
+    //endregion
 
     //region Constructors
     constructor(getRequestBuilder: GetRequestBuilder) {
@@ -107,7 +107,7 @@ class KotRequest {
         this.okHttpClient = postRequestBuilder.okHttpClient
         this.userAgent = postRequestBuilder.userAgent
     }
-//endregion
+    //endregion
 
     //region Getters
 
@@ -174,7 +174,7 @@ class KotRequest {
             }
             return RequestBody.create(MEDIA_TYPE_MARKDOWN, bytes)
         } else {
-            var builder: FormBody.Builder = FormBody.Builder()
+            val builder: FormBody.Builder = FormBody.Builder()
             try {
                 bodyParameterMap?.entries?.forEach { entry -> builder.add(entry.key, entry.value) }
                 urlEncodedFormBodyParameterMap?.entries?.forEach { entry -> builder.addEncoded(entry.key, entry.value) }
@@ -185,9 +185,9 @@ class KotRequest {
         }
     }
 
-//endregion
+    //endregion
 
-    //region Delivers
+    //region Delivery
     fun deliverError(kotError: KotError) {
         try {
             if (!isDelivered) {
@@ -251,7 +251,7 @@ class KotRequest {
             ex.printStackTrace()
         }
     }
-//endregion
+    //endregion
 
     //region Parsers
     fun parseNetworkError(kotError: KotError): KotError {
@@ -276,20 +276,20 @@ class KotRequest {
                 val json: JSONArray = JSONArray(Okio.buffer(response.body().source()).readUtf8())
                 return KotResponse.success(json)
             } catch (e: Exception) {
-                return KotResponse.failed(KotUtlis.getErrorForParse(KotError(e)))
+                return KotResponse.failed(KotUtils.getErrorForParse(KotError(e)))
             }
 
             ResponseType.STRING -> try {
                 return KotResponse.success(Okio.buffer(response.body().source()).readUtf8())
             } catch (e: Exception) {
-                return KotResponse.failed(KotUtlis.getErrorForParse(KotError(e)))
+                return KotResponse.failed(KotUtils.getErrorForParse(KotError(e)))
             }
 
             ResponseType.JSON_OBJECT -> try {
                 val json: JSONObject = JSONObject(Okio.buffer(response.body().source()).readUtf8())
                 return KotResponse.success(json)
             } catch (e: Exception) {
-                return KotResponse.failed(KotUtlis.getErrorForParse(KotError(e)))
+                return KotResponse.failed(KotUtils.getErrorForParse(KotError(e)))
             }
 
             ResponseType.OK_HTTP_RESPONSE -> {
@@ -307,11 +307,11 @@ class KotRequest {
 
         return null
     }
-//endregion
+    //endregion
 
     //region finisher
     fun finish() {
         KotRequestQueue.instance.finish(this)
     }
-//endregion
+    //endregion
 }
