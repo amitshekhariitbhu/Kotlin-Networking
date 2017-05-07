@@ -19,4 +19,12 @@
     <string name="get_json_object">Get As JSON Object</string>
     <string name="get_json_array">Get As JSON Array</string>
     <string name="get_string">Get As String</string>
+    <string name="open_get_api_Test_activity">Open Get Api Test Activity</string>
+    <string name="open_post_api_Test_activity">Open post Api Test Activity</string>
+    <string name="post_json_object">Post As JSON Object</string>
+    <string name="post_string">Post As String</string>
+    <string name="post_json_array">Post As JSON Array</string>
+    <string name="check_header">Check Header</string>
+    <string name="create_user">create user JSONObject</string>
+    <string name="create_new_user_object">create user Object</string>
 </resources>
