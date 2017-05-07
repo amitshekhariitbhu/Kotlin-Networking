@@ -83,12 +83,12 @@ class PostRequestBuilder(var url: String, var method: Method = Method.POST) : Re
     }
 
     fun addApplicationJsonBody(jsonObject: JSONObject): PostRequestBuilder {
-        jsonObject.let { this.applicationJsonString = jsonObject.toString() }
+        this.applicationJsonString = jsonObject.toString()
         return this
     }
 
     fun addApplicationJsonBody(jsonArray: JSONArray): PostRequestBuilder {
-        jsonArray.let { this.applicationJsonString = jsonArray.toString() }
+        this.applicationJsonString = jsonArray.toString()
         return this
     }
 
