@@ -21,14 +21,4 @@ import java.io.Serializable
 /**
  * Created by amitshekhar on 01/05/17.
  */
-class Progress : Serializable {
-
-    var currentBytes: Long = 0
-    var totalBytes: Long = 0
-
-    constructor(currentBytes: Long, totalBytes: Long) {
-        this.currentBytes = currentBytes
-        this.totalBytes = totalBytes
-    }
-
-}
+class Progress(var currentBytes: Long, var totalBytes: Long) : Serializable

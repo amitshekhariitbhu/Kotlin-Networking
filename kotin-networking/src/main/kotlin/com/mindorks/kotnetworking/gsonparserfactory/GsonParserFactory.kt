@@ -31,12 +31,12 @@ import java.util.*
 class GsonParserFactory(private val gson: Gson = Gson()) : Parser.Factory() {
 
     override fun responseBodyParser(type: Type): Parser<ResponseBody, *>? {
-        var typeAdapter: TypeAdapter<*> = gson.getAdapter(TypeToken.get(type))
+        val typeAdapter: TypeAdapter<*> = gson.getAdapter(TypeToken.get(type))
         return GsonResponseBodyParser(gson, typeAdapter)
     }
 
     override fun requestBodyParser(type: Type): Parser<*, RequestBody>? {
-        var typeAdapter: TypeAdapter<*> = gson.getAdapter(TypeToken.get(type))
+        val typeAdapter: TypeAdapter<*> = gson.getAdapter(TypeToken.get(type))
         return GsonRequestBodyParser(gson, typeAdapter)
     }
 
