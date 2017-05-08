@@ -145,7 +145,7 @@ class HttpLoggingInterceptor constructor(private val logger: HttpLoggingIntercep
         val protocol = if (connection != null) connection.protocol() else Protocol.HTTP_1_1
         var requestStartMessage = "--> " + request.method() + ' ' + request.url() + ' ' + protocol
         if (!logHeaders && hasRequestBody) {
-            requestStartMessage += " (" + requestBody!!.contentLength() + "-byte body)"
+            requestStartMessage += " (" + requestBody.contentLength() + "-byte body)"
         }
         logger.log(requestStartMessage)
 
@@ -153,7 +153,7 @@ class HttpLoggingInterceptor constructor(private val logger: HttpLoggingIntercep
             if (hasRequestBody) {
                 // Request body headers are only present when installed as a network interceptor. Force
                 // them to be included (when available) so there values are known.
-                if (requestBody!!.contentType() != null) {
+                if (requestBody.contentType() != null) {
                     logger.log("Content-Type: " + requestBody.contentType())
                 }
                 if (requestBody.contentLength() != -1L) {
@@ -179,7 +179,7 @@ class HttpLoggingInterceptor constructor(private val logger: HttpLoggingIntercep
                 logger.log("--> END " + request.method() + " (encoded body omitted)")
             } else {
                 val buffer = Buffer()
-                requestBody!!.writeTo(buffer)
+                requestBody.writeTo(buffer)
 
                 var charset = UTF8
                 val contentType = requestBody.contentType()

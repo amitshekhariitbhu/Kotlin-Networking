@@ -50,7 +50,7 @@ class KotRequest {
     var stringRequestCallback: ((response: String?, error: KotError?) -> Unit)? = null
     var requestType: RequestType
     var responseType: ResponseType? = null
-    var priorityType: Priority? = null
+    val priorityType: Priority
     var cacheControl: CacheControl? = null
     var executor: Executor? = null
     var okHttpClient: OkHttpClient? = null
@@ -204,27 +204,16 @@ class KotRequest {
     }
 
     private fun deliverSuccessResponse(kotResponse: KotResponse<*>) {
-        jsonObjectRequestCallback?.let {
-            jsonObjectRequestCallback!!.invoke(kotResponse.result as JSONObject?, null)
-        }
-        jsonArrayRequestCallback?.let {
-            jsonArrayRequestCallback!!.invoke(kotResponse.result as JSONArray?, null)
-        }
-        stringRequestCallback?.let {
-            stringRequestCallback!!.invoke(kotResponse.result as String?, null)
-        }
+        jsonObjectRequestCallback?.invoke(kotResponse.result as JSONObject?, null)
+        jsonArrayRequestCallback?.invoke(kotResponse.result as JSONArray?, null)
+        stringRequestCallback?.invoke(kotResponse.result as String?, null)
     }
 
     private fun deliverErrorResponse(kotError: KotError) {
-        jsonObjectRequestCallback?.let {
-            jsonObjectRequestCallback!!.invoke(null, kotError)
-        }
-        jsonArrayRequestCallback?.let {
-            jsonArrayRequestCallback!!.invoke(null, kotError)
-        }
-        stringRequestCallback?.let {
-            stringRequestCallback!!.invoke(null, kotError)
-        }
+        jsonObjectRequestCallback?.invoke(null, kotError)
+        jsonArrayRequestCallback?.invoke(null, kotError)
+        stringRequestCallback?.invoke(null, kotError)
+
     }
 
     fun deliverOkHttpResponse(okHttpResponse: Response) {
@@ -256,10 +245,12 @@ class KotRequest {
     //region Parsers
     fun parseNetworkError(kotError: KotError): KotError {
         try {
-            kotError.response?.let {
-                kotError.response!!.body()?.let {
-                    kotError.response!!.body().source()?.let {
-                        kotError.errorBody = Okio.buffer(kotError.response!!.body().source()).readUtf8()
+            val errorResponse: Response? = kotError.response
+            kotError.errorBody = errorResponse?.let {
+                errorResponse.body()?.let {
+                    errorResponse.body().source()?.let {
+                        source ->
+                        Okio.buffer(source).readUtf8()
                     }
                 }
             }

@@ -48,7 +48,7 @@ class RequestProgressBody(private val requestBody: RequestBody, progressCallback
             bufferedSink = Okio.buffer(sink(sink))
         }
         requestBody.writeTo(bufferedSink)
-        bufferedSink!!.flush()
+        bufferedSink?.flush()
     }
 
     private fun sink(sink: Sink): Sink {

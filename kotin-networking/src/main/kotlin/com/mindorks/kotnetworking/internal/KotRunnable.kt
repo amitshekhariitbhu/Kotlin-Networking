@@ -32,13 +32,8 @@ import okhttp3.Response
  */
 class KotRunnable(val request: KotRequest) : Runnable {
 
-    var priority: Priority? = null
-    var sequence: Int
-
-    init {
-        priority = request.priority
-        sequence = request.sequenceNumber
-    }
+    val priority: Priority = request.priority
+    val sequence: Int = request.sequenceNumber
 
     override fun run() {
         when (request.requestType) {
@@ -73,7 +68,7 @@ class KotRunnable(val request: KotRequest) : Runnable {
 
             kotResponse?.let {
                 if (!kotResponse.isSuccess()) {
-                    deliverError(request, kotResponse.error!!)
+                    kotResponse.error?.let { error -> deliverError(request, error) }
                     return
                 }
 

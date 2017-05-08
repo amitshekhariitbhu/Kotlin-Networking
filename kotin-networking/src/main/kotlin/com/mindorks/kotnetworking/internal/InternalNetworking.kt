@@ -71,11 +71,11 @@ class InternalNetworking private constructor() {
                 okHttpRequest = builder.build()
 
                 if (kotRequest.okHttpClient != null)
-                    kotRequest.call = kotRequest.okHttpClient!!.newBuilder().cache(okHttpClient.cache()).build().newCall(okHttpRequest)
+                    kotRequest.call = kotRequest.okHttpClient?.newBuilder()?.cache(okHttpClient.cache())?.build()?.newCall(okHttpRequest)
                 else
                     kotRequest.call = okHttpClient.newCall(okHttpRequest)
 
-                okHttpResponse = kotRequest.call!!.execute()
+                okHttpResponse = kotRequest.call?.execute()
 
             } catch (ioe: IOException) {
                 throw KotError(ioe)
