@@ -39,7 +39,7 @@ class KotRunnable(val request: KotRequest) : Runnable {
         when (request.requestType) {
             RequestType.SIMPLE -> executeSimpleRequest()
             RequestType.DOWNLOAD -> executeSimpleRequest()
-            RequestType.MULTIPART -> executeSimpleRequest()
+            RequestType.MULTIPART -> executeUploadRequest()
         }
     }
 
@@ -48,6 +48,48 @@ class KotRunnable(val request: KotRequest) : Runnable {
         try {
 
             okHttpResponse = InternalNetworking.makeSimpleRequestAndGetResponse(request)
+
+            if (okHttpResponse == null) {
+                deliverError(request, KotUtils.getErrorForConnection(KotError()))
+                return
+            }
+
+            if (request.responseType == ResponseType.OK_HTTP_RESPONSE) {
+                request.deliverOkHttpResponse(okHttpResponse)
+            }
+
+            if (okHttpResponse.code() >= 400) {
+                deliverError(request, KotUtils.getErrorForServerResponse(KotError(okHttpResponse),
+                        request, okHttpResponse.code()))
+                return
+            }
+
+            val kotResponse: KotResponse<*>? = request.parseResponse(okHttpResponse)
+
+            kotResponse?.let {
+                if (!kotResponse.isSuccess()) {
+                    kotResponse.error?.let { error -> deliverError(request, error) }
+                    return
+                }
+
+                kotResponse.response = okHttpResponse as Response
+                request.deliverResponse(kotResponse)
+            }
+
+        } catch (ex: Exception) {
+            ex.printStackTrace()
+            deliverError(request, KotUtils.getErrorForConnection(KotError(ex)))
+        } finally {
+            SourceCloseUtil.close(okHttpResponse, request)
+        }
+    }
+
+
+    private fun executeUploadRequest() {
+        var okHttpResponse: Response? = null
+
+        try {
+            okHttpResponse = InternalNetworking.makeUploadRequestAndGetResponse(request)
 
             if (okHttpResponse == null) {
                 deliverError(request, KotUtils.getErrorForConnection(KotError()))

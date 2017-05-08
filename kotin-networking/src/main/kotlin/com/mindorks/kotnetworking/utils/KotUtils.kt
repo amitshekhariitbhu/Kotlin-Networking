@@ -19,6 +19,7 @@ package com.mindorks.kotnetworking.utils
 import com.mindorks.kotnetworking.common.KotConstants
 import com.mindorks.kotnetworking.error.KotError
 import com.mindorks.kotnetworking.request.KotRequest
+import java.net.URLConnection
 
 /**
  * Created by aamir on 03/05/17.
@@ -44,6 +45,15 @@ class KotUtils private constructor() {
             kotError.errorCode = 0
             kotError.errorDetail = KotConstants.PARSE_ERROR
             return kotError
+        }
+
+        fun getMimeType(path: String): String {
+            val fileNameMap = URLConnection.getFileNameMap()
+            var contentTypeFor: String? = fileNameMap.getContentTypeFor(path)
+            if (contentTypeFor == null) {
+                contentTypeFor = "application/octet-stream"
+            }
+            return contentTypeFor
         }
 
     }

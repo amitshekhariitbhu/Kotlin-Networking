@@ -19,6 +19,7 @@ package com.mindorks.kotnetworking
 import android.content.Context
 import com.mindorks.kotnetworking.common.Method
 import com.mindorks.kotnetworking.requestbuidler.GetRequestBuilder
+import com.mindorks.kotnetworking.requestbuidler.MultipartRequestBuilder
 import com.mindorks.kotnetworking.requestbuidler.PostRequestBuilder
 
 /**
@@ -47,6 +48,10 @@ class KotNetworking private constructor() {
 
         fun put(url: String): PostRequestBuilder {
             return PostRequestBuilder(url, Method.PUT)
+        }
+
+        fun upload(url: String): MultipartRequestBuilder {
+            return MultipartRequestBuilder(url, Method.POST)
         }
 
     }
