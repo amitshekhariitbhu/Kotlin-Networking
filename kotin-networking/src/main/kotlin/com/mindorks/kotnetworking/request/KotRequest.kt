@@ -63,6 +63,9 @@ class KotRequest {
     var isCancelled = false
     var isDelivered = false
     var future: Future<*>? = null
+    var uploadProgressListener: ((bytesDownloaded: Long, totalBytes: Long) -> Unit)? = null
+
+
     private var applicationJsonString: String? = null
     private var stringBody: String? = null
     private var file: File? = null
@@ -70,6 +73,7 @@ class KotRequest {
     private var customMediaType: MediaType? = null
     private var JSON_MEDIA_TYPE = MediaType.parse("application/json; charset=utf-8")
     private var MEDIA_TYPE_MARKDOWN = MediaType.parse("text/x-markdown; charset=utf-8")
+
     //endregion
 
     //region Constructors
@@ -130,6 +134,13 @@ class KotRequest {
         this.multiPartFileMap.putAll(multipartRequestBuilder.mMultiPartFileMap)
     }
     //endregion
+
+
+    fun setUploadProgressListener(
+            progressListener: (bytesDownloaded: Long, totalBytes: Long) -> Unit): KotRequest {
+        uploadProgressListener = progressListener
+        return this
+    }
 
     //region Getters
 

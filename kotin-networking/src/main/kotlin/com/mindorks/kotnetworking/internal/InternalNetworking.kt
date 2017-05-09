@@ -98,7 +98,8 @@ class InternalNetworking private constructor() {
                 var builder: Request.Builder = Request.Builder().url(kotRequest.getFormattedUrl())
                 addHeadersToRequestBuilder(builder, kotRequest)
                 val requestBody: RequestBody = kotRequest.getMultiPartRequestBody()
-                builder = builder.post(RequestProgressBody(requestBody, null))
+                builder = builder.post(RequestProgressBody(requestBody,
+                        kotRequest.uploadProgressListener))
 
                 kotRequest.cacheControl?.let {
                     builder.cacheControl(kotRequest.cacheControl)

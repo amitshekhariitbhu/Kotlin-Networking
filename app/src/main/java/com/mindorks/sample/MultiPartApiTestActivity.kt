@@ -96,6 +96,10 @@ class MultiPartApiTestActivity : AppCompatActivity() {
                 .addMultiPartFile("image", File(filePath))
                 .setTag(this).setPriority(Priority.MEDIUM)
                 .build()
+                .setUploadProgressListener { bytesDownloaded, totalBytes ->
+                    Log.i(TAG, "setUploadProgressListener : " +
+                            "Bytes Upload $bytesDownloaded/$totalBytes ")
+                }
                 .getAsJSONObject { result, error ->
                     if (error != null) {
                         Log.d(TAG, error.toString())
