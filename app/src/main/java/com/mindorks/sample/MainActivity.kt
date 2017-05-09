@@ -38,6 +38,10 @@ class MainActivity : AppCompatActivity() {
                 val intent = Intent(this, PostApiTestActivity::class.java)
                 startActivity(intent)
             }
+            R.id.open_multipart_api_test_activity_btn -> {
+                val intent = Intent(this, MultiPartApiTestActivity::class.java)
+                startActivity(intent)
+            }
         }
     }
 }

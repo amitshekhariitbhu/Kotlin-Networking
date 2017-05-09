@@ -90,8 +90,37 @@ class InternalNetworking private constructor() {
         }
 
         @Throws(KotError::class)
-        fun makeUploadRequestAndGetResponse(): Response? {
-            TODO("Add Logic")
+        fun makeUploadRequestAndGetResponse(kotRequest: KotRequest): Response? {
+            val okHttpRequest: Request
+            val okHttpResponse: Response?
+
+            try {
+                var builder: Request.Builder = Request.Builder().url(kotRequest.getFormattedUrl())
+                addHeadersToRequestBuilder(builder, kotRequest)
+                val requestBody: RequestBody = kotRequest.getMultiPartRequestBody()
+                builder = builder.post(RequestProgressBody(requestBody,
+                        kotRequest.uploadProgressListener))
+
+                kotRequest.cacheControl?.let {
+                    builder.cacheControl(kotRequest.cacheControl)
+                }
+
+                okHttpRequest = builder.build()
+
+                if (kotRequest.okHttpClient != null) {
+                    kotRequest.call = kotRequest.okHttpClient?.newBuilder()
+                            ?.cache(okHttpClient.cache())?.build()?.newCall(okHttpRequest)
+                } else {
+                    kotRequest.call = okHttpClient.newCall(okHttpRequest)
+                }
+
+                okHttpResponse = kotRequest.call?.execute()
+
+            } catch (ioe: IOException) {
+                throw KotError(ioe)
+            }
+
+            return okHttpResponse
         }
 
         fun addHeadersToRequestBuilder(builder: Request.Builder, kotRequest: KotRequest) {

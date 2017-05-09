@@ -21,6 +21,7 @@ import com.mindorks.kotnetworking.core.Core
 import com.mindorks.kotnetworking.error.KotError
 import com.mindorks.kotnetworking.internal.KotRequestQueue
 import com.mindorks.kotnetworking.requestbuidler.GetRequestBuilder
+import com.mindorks.kotnetworking.requestbuidler.MultipartRequestBuilder
 import com.mindorks.kotnetworking.requestbuidler.PostRequestBuilder
 import com.mindorks.kotnetworking.utils.KotUtils
 import okhttp3.*
@@ -45,6 +46,7 @@ class KotRequest {
     var headersMap: MutableMap<String, String>
     val queryParameterMap: MutableMap<String, String>
     val pathParameterMap: MutableMap<String, String>
+    val multiPartFileMap: MutableMap<String, File> = mutableMapOf()
     var jsonObjectRequestCallback: ((response: JSONObject?, error: KotError?) -> Unit)? = null
     var jsonArrayRequestCallback: ((response: JSONArray?, error: KotError?) -> Unit)? = null
     var stringRequestCallback: ((response: String?, error: KotError?) -> Unit)? = null
@@ -61,6 +63,9 @@ class KotRequest {
     var isCancelled = false
     var isDelivered = false
     var future: Future<*>? = null
+    var uploadProgressListener: ((bytesDownloaded: Long, totalBytes: Long) -> Unit)? = null
+
+
     private var applicationJsonString: String? = null
     private var stringBody: String? = null
     private var file: File? = null
@@ -68,6 +73,7 @@ class KotRequest {
     private var customMediaType: MediaType? = null
     private var JSON_MEDIA_TYPE = MediaType.parse("application/json; charset=utf-8")
     private var MEDIA_TYPE_MARKDOWN = MediaType.parse("text/x-markdown; charset=utf-8")
+
     //endregion
 
     //region Constructors
@@ -107,7 +113,34 @@ class KotRequest {
         this.okHttpClient = postRequestBuilder.okHttpClient
         this.userAgent = postRequestBuilder.userAgent
     }
+
+
+
+    constructor(multipartRequestBuilder: MultipartRequestBuilder) {
+        this.method = multipartRequestBuilder.method
+        this.url = multipartRequestBuilder.url
+        this.priority = multipartRequestBuilder.priority
+        this.headersMap = multipartRequestBuilder.headersMap
+        this.queryParameterMap = multipartRequestBuilder.queryParameterMap
+        this.pathParameterMap = multipartRequestBuilder.pathParameterMap
+        multipartRequestBuilder.mCustomContentType?.let { mediaType -> this.customMediaType = MediaType.parse(mediaType) }
+        this.requestType = RequestType.MULTIPART
+        this.priorityType = multipartRequestBuilder.priority
+        this.cacheControl = multipartRequestBuilder.cacheControl
+        this.executor = multipartRequestBuilder.executor
+        this.okHttpClient = multipartRequestBuilder.okHttpClient
+        this.userAgent = multipartRequestBuilder.userAgent
+
+        this.multiPartFileMap.putAll(multipartRequestBuilder.mMultiPartFileMap)
+    }
     //endregion
+
+
+    fun setUploadProgressListener(
+            progressListener: (bytesDownloaded: Long, totalBytes: Long) -> Unit): KotRequest {
+        uploadProgressListener = progressListener
+        return this
+    }
 
     //region Getters
 
@@ -183,6 +216,31 @@ class KotRequest {
             }
             return builder.build()
         }
+    }
+
+
+    fun getMultiPartRequestBody(): RequestBody {
+        val builder = MultipartBody.Builder()
+                .setType(if (customMediaType == null) MultipartBody.FORM else customMediaType)
+        try {
+            for (entry in multiPartFileMap.entries) {
+                builder.addPart(Headers.of("Content-Disposition",
+                        "form-data; name=\"" + entry.key + "\""),
+                        RequestBody.create(null, entry.value))
+            }
+            for (entry in multiPartFileMap.entries) {
+                val fileName = entry.value.getName()
+                val fileBody = RequestBody.create(MediaType.parse(KotUtils.getMimeType(fileName)),
+                        entry.value)
+                builder.addPart(Headers.of("Content-Disposition",
+                        "form-data; name=\"" + entry.key + "\"; filename=\"" + fileName + "\""),
+                        fileBody)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        return builder.build()
     }
 
     //endregion
