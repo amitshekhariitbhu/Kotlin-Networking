@@ -53,11 +53,11 @@ class KotUtils private constructor() {
 
         fun getMimeType(path: String): String {
             val fileNameMap = URLConnection.getFileNameMap()
-            var contentTypeFor: String? = fileNameMap.getContentTypeFor(path)
-            if (contentTypeFor == null) {
-                contentTypeFor = "application/octet-stream"
+            var mimeType: String? = fileNameMap.getContentTypeFor(path)
+            if (mimeType == null) {
+                mimeType = "application/octet-stream"
             }
-            return contentTypeFor
+            return mimeType
         }
 
         fun saveFile(response: Response?, dirPath: String?, fileName: String?) {
