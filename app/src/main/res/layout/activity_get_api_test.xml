@@ -54,4 +54,14 @@
         android:layout_marginTop="29dp"
         android:onClick="getAsJSONArray"
         android:text="@string/get_json_array" />
+
+    <Button
+        android:id="@+id/button4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/button3"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="29dp"
+        android:onClick="downloadImageFile"
+        android:text="@string/download_image" />
 </RelativeLayout>

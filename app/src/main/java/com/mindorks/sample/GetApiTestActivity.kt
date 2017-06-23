@@ -22,6 +22,7 @@ import android.util.Log
 import android.view.View
 import com.mindorks.kotnetworking.KotNetworking
 import com.mindorks.kotnetworking.common.Priority
+import com.mindorks.sample.util.Utils
 
 class GetApiTestActivity : AppCompatActivity() {
 
@@ -79,6 +80,22 @@ class GetApiTestActivity : AppCompatActivity() {
                         Log.d(TAG, error.toString())
                     } else {
                         Log.d(TAG, response.toString())
+                    }
+                }
+    }
+
+    fun downloadImageFile(view: View) {
+        val imageUrl: String = "http://i.imgur.com/m6K1DCQ.jpg"
+        val dirPath: String = Utils.getRootDirPath(applicationContext)
+        val fileName: String = "Img_" + System.currentTimeMillis() + ".jpg"
+        KotNetworking.download(imageUrl, dirPath, fileName)
+                .setPriority(Priority.HIGH)
+                .build()
+                .startDownload { error ->
+                    if (error != null) {
+                        Log.d(TAG, error.toString())
+                    } else {
+                        Log.d(TAG, "completed")
                     }
                 }
     }
