@@ -19,6 +19,10 @@ package com.mindorks.kotnetworking.utils
 import com.mindorks.kotnetworking.common.KotConstants
 import com.mindorks.kotnetworking.error.KotError
 import com.mindorks.kotnetworking.request.KotRequest
+import okhttp3.Response
+import java.io.File
+import java.io.FileOutputStream
+import java.io.InputStream
 import java.net.URLConnection
 
 /**
@@ -54,6 +58,23 @@ class KotUtils private constructor() {
                 contentTypeFor = "application/octet-stream"
             }
             return contentTypeFor
+        }
+
+        fun saveFile(response: Response?, dirPath: String?, fileName: String?) {
+            val inputStream: InputStream? = response?.body()?.byteStream()
+
+            val dir = File(dirPath)
+            if (!dir.exists()) {
+                dir.mkdirs()
+            }
+
+            val file = File(dir, fileName)
+            val fos = FileOutputStream(file)
+            inputStream.use { input ->
+                fos.use { output ->
+                    if (output is FileOutputStream) input?.copyTo(output)
+                }
+            }
         }
 
     }

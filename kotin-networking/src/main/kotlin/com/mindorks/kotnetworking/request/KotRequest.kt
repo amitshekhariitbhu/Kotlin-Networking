@@ -20,6 +20,7 @@ import com.mindorks.kotnetworking.common.*
 import com.mindorks.kotnetworking.core.Core
 import com.mindorks.kotnetworking.error.KotError
 import com.mindorks.kotnetworking.internal.KotRequestQueue
+import com.mindorks.kotnetworking.requestbuidler.DownloadBuilder
 import com.mindorks.kotnetworking.requestbuidler.GetRequestBuilder
 import com.mindorks.kotnetworking.requestbuidler.MultipartRequestBuilder
 import com.mindorks.kotnetworking.requestbuidler.PostRequestBuilder
@@ -41,6 +42,8 @@ class KotRequest {
     //region Member Variables
     var method: Method
     var url: String
+    var dirPath: String? = null
+    var fileName: String? = null
     var bodyParameterMap: MutableMap<String, String>? = null
     var urlEncodedFormBodyParameterMap: MutableMap<String, String>? = null
     var headersMap: MutableMap<String, String>
@@ -50,9 +53,9 @@ class KotRequest {
     var jsonObjectRequestCallback: ((response: JSONObject?, error: KotError?) -> Unit)? = null
     var jsonArrayRequestCallback: ((response: JSONArray?, error: KotError?) -> Unit)? = null
     var stringRequestCallback: ((response: String?, error: KotError?) -> Unit)? = null
+    var downloadCallback: ((error: KotError?) -> Unit)? = null
     var requestType: RequestType
     var responseType: ResponseType? = null
-    val priorityType: Priority
     var cacheControl: CacheControl? = null
     var executor: Executor? = null
     var okHttpClient: OkHttpClient? = null
@@ -60,6 +63,7 @@ class KotRequest {
     var call: Call? = null
     var priority: Priority
     var sequenceNumber: Int = 0
+    var percentageThresholdForCancelling: Int = 0
     var isCancelled = false
     var isDelivered = false
     var future: Future<*>? = null
@@ -85,7 +89,6 @@ class KotRequest {
         this.queryParameterMap = getRequestBuilder.queryParameterMap
         this.pathParameterMap = getRequestBuilder.pathParameterMap
         this.requestType = RequestType.SIMPLE
-        this.priorityType = getRequestBuilder.priority
         this.cacheControl = getRequestBuilder.cacheControl
         this.executor = getRequestBuilder.executor
         this.okHttpClient = getRequestBuilder.okHttpClient
@@ -107,13 +110,11 @@ class KotRequest {
         this.stringBody = postRequestBuilder.stringBody
         postRequestBuilder.customContentType?.let { mediaType -> this.customMediaType = MediaType.parse(mediaType) }
         this.requestType = RequestType.SIMPLE
-        this.priorityType = postRequestBuilder.priority
         this.cacheControl = postRequestBuilder.cacheControl
         this.executor = postRequestBuilder.executor
         this.okHttpClient = postRequestBuilder.okHttpClient
         this.userAgent = postRequestBuilder.userAgent
     }
-
 
 
     constructor(multipartRequestBuilder: MultipartRequestBuilder) {
@@ -125,13 +126,29 @@ class KotRequest {
         this.pathParameterMap = multipartRequestBuilder.pathParameterMap
         multipartRequestBuilder.mCustomContentType?.let { mediaType -> this.customMediaType = MediaType.parse(mediaType) }
         this.requestType = RequestType.MULTIPART
-        this.priorityType = multipartRequestBuilder.priority
         this.cacheControl = multipartRequestBuilder.cacheControl
         this.executor = multipartRequestBuilder.executor
         this.okHttpClient = multipartRequestBuilder.okHttpClient
         this.userAgent = multipartRequestBuilder.userAgent
 
         this.multiPartFileMap.putAll(multipartRequestBuilder.mMultiPartFileMap)
+    }
+
+    constructor(downloadBuilder: DownloadBuilder) {
+        this.method = Method.GET
+        this.url = downloadBuilder.url
+        this.priority = downloadBuilder.priority
+        this.dirPath = downloadBuilder.dirPath
+        this.fileName = downloadBuilder.fileName
+        this.headersMap = downloadBuilder.headersMap
+        this.queryParameterMap = downloadBuilder.queryParameterMap
+        this.pathParameterMap = downloadBuilder.pathParameterMap
+        this.requestType = RequestType.DOWNLOAD
+        this.cacheControl = downloadBuilder.cacheControl
+        this.percentageThresholdForCancelling = downloadBuilder.percentageThresholdForCancelling
+        this.executor = downloadBuilder.executor
+        this.okHttpClient = downloadBuilder.okHttpClient
+        this.userAgent = downloadBuilder.userAgent
     }
     //endregion
 
@@ -243,6 +260,11 @@ class KotRequest {
         return builder.build()
     }
 
+    fun startDownload(handler: (kotError: KotError?) -> Unit) {
+        downloadCallback = handler
+        KotRequestQueue.instance.addRequest(this)
+    }
+
     //endregion
 
     //region Delivery
@@ -265,12 +287,15 @@ class KotRequest {
         jsonObjectRequestCallback?.invoke(kotResponse.result as JSONObject?, null)
         jsonArrayRequestCallback?.invoke(kotResponse.result as JSONArray?, null)
         stringRequestCallback?.invoke(kotResponse.result as String?, null)
+        downloadCallback?.invoke(null)
+        finish()
     }
 
     private fun deliverErrorResponse(kotError: KotError) {
         jsonObjectRequestCallback?.invoke(null, kotError)
         jsonArrayRequestCallback?.invoke(null, kotError)
         stringRequestCallback?.invoke(null, kotError)
+        downloadCallback?.invoke(kotError)
 
     }
 
@@ -355,6 +380,33 @@ class KotRequest {
         }
 
         return null
+    }
+    //endregion
+
+    //region Download Request helper methods
+
+    fun updateDownloadCompletion() {
+        isDelivered = true
+        if (downloadCallback != null) {
+            if (!isCancelled) {
+                if (executor != null) {
+                    executor?.execute({
+                        downloadCallback?.invoke(null)
+                        finish()
+                    })
+                } else {
+                    Core.instance.executorSupplier.forMainThreadTasks().execute({
+                        downloadCallback?.invoke(null)
+                        finish()
+                    })
+                }
+            } else {
+                deliverError(KotError())
+                finish()
+            }
+        } else {
+            finish()
+        }
     }
     //endregion
 

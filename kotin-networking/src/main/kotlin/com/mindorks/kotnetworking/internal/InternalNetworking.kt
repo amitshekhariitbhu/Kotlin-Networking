@@ -20,10 +20,12 @@ import com.mindorks.kotnetworking.common.KotConstants
 import com.mindorks.kotnetworking.common.Method
 import com.mindorks.kotnetworking.error.KotError
 import com.mindorks.kotnetworking.request.KotRequest
+import com.mindorks.kotnetworking.utils.KotUtils
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.Response
+import java.io.File
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
@@ -85,8 +87,31 @@ class InternalNetworking private constructor() {
         }
 
         @Throws(KotError::class)
-        fun makeDownloadRequestAndGetResponse(): Response? {
-            TODO("Add Logic")
+        fun makeDownloadRequestAndGetResponse(kotRequest: KotRequest): Response? {
+            val okHttpRequest: Request
+            val okHttpResponse: Response?
+            try {
+                var builder: Request.Builder = Request.Builder().url(kotRequest.getFormattedUrl())
+                addHeadersToRequestBuilder(builder, kotRequest)
+                builder = builder.get()
+                kotRequest.cacheControl?.let { builder.cacheControl(it) }
+                okHttpRequest = builder.build()
+                kotRequest.call = okHttpClient.newCall(okHttpRequest)
+                okHttpResponse = kotRequest.call?.execute()
+                KotUtils.saveFile(okHttpResponse, kotRequest.dirPath, kotRequest.fileName)
+
+            } catch (ioe: IOException) {
+                try {
+                    val destinationFile = File(kotRequest.dirPath + File.separator + kotRequest.fileName)
+                    if (destinationFile.exists()) {
+                        destinationFile.delete()
+                    }
+                } catch (ex: Exception) {
+                    ex.printStackTrace()
+                }
+                throw KotError(ioe)
+            }
+            return okHttpResponse
         }
 
         @Throws(KotError::class)
