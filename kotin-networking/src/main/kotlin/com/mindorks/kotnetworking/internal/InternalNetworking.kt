@@ -58,12 +58,27 @@ class InternalNetworking private constructor() {
                 val requestBody: RequestBody?
 
                 when (kotRequest.method) {
-                    Method.GET -> builder.get()
+                    Method.GET -> {
+                        builder = builder.get()
+                    }
                     Method.POST -> {
                         requestBody = kotRequest.getRequestBody()
                         builder = builder.post(requestBody)
                     }
-                    else -> {
+                    Method.PUT -> {
+                        requestBody = kotRequest.getRequestBody()
+                        builder = builder.put(requestBody)
+                    }
+                    Method.DELETE -> {
+                        requestBody = kotRequest.getRequestBody()
+                        builder = builder.delete(requestBody)
+                    }
+                    Method.HEAD -> {
+                        builder = builder.head()
+                    }
+                    Method.PATCH -> {
+                        requestBody = kotRequest.getRequestBody()
+                        builder = builder.patch(requestBody)
                     }
                 }
 
