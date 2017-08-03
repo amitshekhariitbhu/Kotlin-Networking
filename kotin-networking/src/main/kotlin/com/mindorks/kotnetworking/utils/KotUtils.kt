@@ -17,6 +17,7 @@
 package com.mindorks.kotnetworking.utils
 
 import com.mindorks.kotnetworking.common.KotConstants
+import com.mindorks.kotnetworking.core.Core
 import com.mindorks.kotnetworking.error.KotError
 import com.mindorks.kotnetworking.request.KotRequest
 import okhttp3.Response
@@ -74,6 +75,13 @@ class KotUtils private constructor() {
                 fos.use { output ->
                     if (output is FileOutputStream) input?.copyTo(output)
                 }
+            }
+        }
+
+        fun sendAnalytics(analyticsListener: ((timeTakenInMillis: Long, bytesSent: Long, bytesReceived: Long, isFromCache: Boolean) -> Unit)?,
+                          timeTaken: Long, bytesSent: Long, bytesReceived: Long, isFromCache: Boolean) {
+            Core.instance.executorSupplier.forMainThreadTasks().execute {
+                analyticsListener?.invoke(timeTaken, bytesSent, bytesReceived, isFromCache)
             }
         }
 

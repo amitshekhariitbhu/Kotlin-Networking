@@ -68,6 +68,7 @@ class KotRequest {
     var isDelivered = false
     var future: Future<*>? = null
     var uploadProgressListener: ((bytesDownloaded: Long, totalBytes: Long) -> Unit)? = null
+    var analyticsListener: ((timeTakenInMillis: Long, bytesSent: Long, bytesReceived: Long, isFromCache: Boolean) -> Unit)? = null
 
 
     private var applicationJsonString: String? = null
@@ -152,12 +153,17 @@ class KotRequest {
     }
     //endregion
 
-
-    fun setUploadProgressListener(
-            progressListener: (bytesDownloaded: Long, totalBytes: Long) -> Unit): KotRequest {
+    //region Listeners
+    fun setUploadProgressListener(progressListener: (bytesDownloaded: Long, totalBytes: Long) -> Unit): KotRequest {
         uploadProgressListener = progressListener
         return this
     }
+
+    fun setAnalyticsListener(analyticsListener: (timeTakenInMillis: Long, bytesSent: Long, bytesReceived: Long, isFromCache: Boolean) -> Unit): KotRequest {
+        this.analyticsListener = analyticsListener
+        return this
+    }
+    //endregion
 
     //region Getters
 

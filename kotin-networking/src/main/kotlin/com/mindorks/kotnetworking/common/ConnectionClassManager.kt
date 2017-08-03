@@ -48,7 +48,8 @@ class ConnectionClassManager private constructor() {
     private var mConnectionQualityCallback: ((connectionQuality: ConnectionQuality,
                                               currentBandWidth: Int) -> Unit)? = null
 
-    @Synchronized fun updateBandwidth(bytes: Long, timeInMs: Long) {
+    @Synchronized fun updateBandwidth(bytes: Long?, timeInMs: Long) {
+        if (bytes == null) return
 
         if (timeInMs == 0L || bytes < 20000
                 || bytes * 1.0 / timeInMs * BYTES_TO_BITS < BANDWIDTH_LOWER_BOUND) {
