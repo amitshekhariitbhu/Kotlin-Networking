@@ -14,9 +14,8 @@
  *    limitations under the License.
  */
 
-package com.sample.library.common
+package com.mindorks.kotnetworking.common
 
-import com.mindorks.kotnetworking.common.ConnectionQuality
 import com.mindorks.kotnetworking.core.Core
 
 /**
