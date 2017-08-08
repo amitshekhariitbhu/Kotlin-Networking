@@ -60,6 +60,12 @@ class GetApiTestActivity : AppCompatActivity() {
                 .setTag(this)
                 .setPriority(Priority.MEDIUM)
                 .build()
+                .setAnalyticsListener { timeTakenInMillis, bytesSent, bytesReceived, isFromCache ->
+                    println("timeTakenInMillis ---> $timeTakenInMillis")
+                    println("bytesSent ---> $bytesSent")
+                    println("bytesReceived ---> $bytesReceived")
+                    println("isFromCache ---> $isFromCache")
+                }
                 .getAsJSONArray { response, error ->
                     if (error != null) {
                         Log.d(TAG, error.toString())
@@ -75,6 +81,12 @@ class GetApiTestActivity : AppCompatActivity() {
                 .setTag(this)
                 .setPriority(Priority.MEDIUM)
                 .build()
+                .setAnalyticsListener { timeTakenInMillis, bytesSent, bytesReceived, isFromCache ->
+                    println("timeTakenInMillis ---> $timeTakenInMillis")
+                    println("bytesSent ---> $bytesSent")
+                    println("bytesReceived ---> $bytesReceived")
+                    println("isFromCache ---> $isFromCache")
+                }
                 .getAsJSONObject { response, error ->
                     if (error != null) {
                         Log.d(TAG, error.toString())
@@ -85,12 +97,18 @@ class GetApiTestActivity : AppCompatActivity() {
     }
 
     fun downloadImageFile(view: View) {
-        val imageUrl: String = "http://i.imgur.com/m6K1DCQ.jpg"
+        val imageUrl: String = "http://i.imgur.com/AtbX9iX.png"
         val dirPath: String = Utils.getRootDirPath(applicationContext)
-        val fileName: String = "Img_" + System.currentTimeMillis() + ".jpg"
+        val fileName: String = "Img_1.jpg"
         KotNetworking.download(imageUrl, dirPath, fileName)
                 .setPriority(Priority.HIGH)
                 .build()
+                .setAnalyticsListener { timeTakenInMillis, bytesSent, bytesReceived, isFromCache ->
+                    println("timeTakenInMillis ---> $timeTakenInMillis")
+                    println("bytesSent ---> $bytesSent")
+                    println("bytesReceived ---> $bytesReceived")
+                    println("isFromCache ---> $isFromCache")
+                }
                 .startDownload { error ->
                     if (error != null) {
                         Log.d(TAG, error.toString())

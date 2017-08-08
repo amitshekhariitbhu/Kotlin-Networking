@@ -48,6 +48,12 @@ class PostApiTestActivity : AppCompatActivity() {
                         .setTag(this)
                         .setPriority(Priority.MEDIUM)
                         .build()
+                        .setAnalyticsListener { timeTakenInMillis, bytesSent, bytesReceived, isFromCache ->
+                            println("timeTakenInMillis ---> $timeTakenInMillis")
+                            println("bytesSent ---> $bytesSent")
+                            println("bytesReceived ---> $bytesReceived")
+                            println("isFromCache ---> $isFromCache")
+                        }
                         .getAsJSONObject { response, error ->
                             if (error != null) {
                                 Log.d(PostApiTestActivity.TAG, error.toString())
@@ -64,6 +70,12 @@ class PostApiTestActivity : AppCompatActivity() {
                         .setTag(this)
                         .setPriority(Priority.MEDIUM)
                         .build()
+                        .setAnalyticsListener { timeTakenInMillis, bytesSent, bytesReceived, isFromCache ->
+                            println("timeTakenInMillis ---> $timeTakenInMillis")
+                            println("bytesSent ---> $bytesSent")
+                            println("bytesReceived ---> $bytesReceived")
+                            println("isFromCache ---> $isFromCache")
+                        }
                         .getAsJSONArray { response, error ->
                             if (error != null) {
                                 Log.d(PostApiTestActivity.TAG, error.toString())
@@ -80,6 +92,12 @@ class PostApiTestActivity : AppCompatActivity() {
                         .setTag(this)
                         .setPriority(Priority.MEDIUM)
                         .build()
+                        .setAnalyticsListener { timeTakenInMillis, bytesSent, bytesReceived, isFromCache ->
+                            println("timeTakenInMillis ---> $timeTakenInMillis")
+                            println("bytesSent ---> $bytesSent")
+                            println("bytesReceived ---> $bytesReceived")
+                            println("isFromCache ---> $isFromCache")
+                        }
                         .getAsString { response, error ->
                             if (error != null) {
                                 Log.d(PostApiTestActivity.TAG, error.toString())
@@ -95,6 +113,12 @@ class PostApiTestActivity : AppCompatActivity() {
                         .setTag(this)
                         .setPriority(Priority.MEDIUM)
                         .build()
+                        .setAnalyticsListener { timeTakenInMillis, bytesSent, bytesReceived, isFromCache ->
+                            println("timeTakenInMillis ---> $timeTakenInMillis")
+                            println("bytesSent ---> $bytesSent")
+                            println("bytesReceived ---> $bytesReceived")
+                            println("isFromCache ---> $isFromCache")
+                        }
                         .getAsString { response, error ->
                             if (error != null) {
                                 Log.d(PostApiTestActivity.TAG, error.toString())
@@ -117,6 +141,12 @@ class PostApiTestActivity : AppCompatActivity() {
                         .setTag(this)
                         .setPriority(Priority.MEDIUM)
                         .build()
+                        .setAnalyticsListener { timeTakenInMillis, bytesSent, bytesReceived, isFromCache ->
+                            println("timeTakenInMillis ---> $timeTakenInMillis")
+                            println("bytesSent ---> $bytesSent")
+                            println("bytesReceived ---> $bytesReceived")
+                            println("isFromCache ---> $isFromCache")
+                        }
                         .getAsString { response, error ->
                             if (error != null) {
                                 Log.d(PostApiTestActivity.TAG, error.toString())
@@ -135,6 +165,12 @@ class PostApiTestActivity : AppCompatActivity() {
                         .setTag(this)
                         .setPriority(Priority.MEDIUM)
                         .build()
+                        .setAnalyticsListener { timeTakenInMillis, bytesSent, bytesReceived, isFromCache ->
+                            println("timeTakenInMillis ---> $timeTakenInMillis")
+                            println("bytesSent ---> $bytesSent")
+                            println("bytesReceived ---> $bytesReceived")
+                            println("isFromCache ---> $isFromCache")
+                        }
                         .getAsString { response, error ->
                             if (error != null) {
                                 Log.d(PostApiTestActivity.TAG, error.toString())

@@ -96,6 +96,12 @@ class MultiPartApiTestActivity : AppCompatActivity() {
                 .addMultiPartFile("image", File(filePath))
                 .setTag(this).setPriority(Priority.MEDIUM)
                 .build()
+                .setAnalyticsListener { timeTakenInMillis, bytesSent, bytesReceived, isFromCache ->
+                    println("timeTakenInMillis ---> $timeTakenInMillis")
+                    println("bytesSent ---> $bytesSent")
+                    println("bytesReceived ---> $bytesReceived")
+                    println("isFromCache ---> $isFromCache")
+                }
                 .setUploadProgressListener { bytesDownloaded, totalBytes ->
                     Log.i(TAG, "setUploadProgressListener : " +
                             "Bytes Upload $bytesDownloaded/$totalBytes ")
