@@ -53,6 +53,7 @@ class KotRequest {
     var jsonObjectRequestCallback: ((response: JSONObject?, error: KotError?) -> Unit)? = null
     var jsonArrayRequestCallback: ((response: JSONArray?, error: KotError?) -> Unit)? = null
     var stringRequestCallback: ((response: String?, error: KotError?) -> Unit)? = null
+    var mOkHttpResponseListener: ((response: Response?, error: KotError?) -> Unit)? = null
     var downloadCallback: ((error: KotError?) -> Unit)? = null
     var requestType: RequestType
     var responseType: ResponseType? = null
@@ -185,6 +186,12 @@ class KotRequest {
         KotRequestQueue.instance.addRequest(this)
     }
 
+    fun getAsOkHttpResponse(handler: (response: Response?, error: KotError?) -> Unit) {
+        this.responseType = ResponseType.OK_HTTP_RESPONSE
+        this.mOkHttpResponseListener = handler
+        KotRequestQueue.instance.addRequest(this)
+    }
+
     fun getFormattedUrl(): String {
         var tempUrl = url
 
@@ -246,17 +253,17 @@ class KotRequest {
         val builder = MultipartBody.Builder()
                 .setType(if (customMediaType == null) MultipartBody.FORM else customMediaType)
         try {
-            for (entry in multiPartFileMap.entries) {
+            for ((key, value) in multiPartFileMap) {
                 builder.addPart(Headers.of("Content-Disposition",
-                        "form-data; name=\"" + entry.key + "\""),
-                        RequestBody.create(null, entry.value))
+                        "form-data; name=\"$key\""),
+                        RequestBody.create(null, value))
             }
-            for (entry in multiPartFileMap.entries) {
-                val fileName = entry.value.getName()
+            for ((key, value) in multiPartFileMap.entries) {
+                val fileName = value.name
                 val fileBody = RequestBody.create(MediaType.parse(KotUtils.getMimeType(fileName)),
-                        entry.value)
+                        value)
                 builder.addPart(Headers.of("Content-Disposition",
-                        "form-data; name=\"" + entry.key + "\"; filename=\"" + fileName + "\""),
+                        "form-data; name=\"$key\"; filename=\"$fileName\""),
                         fileBody)
             }
         } catch (e: Exception) {
@@ -302,22 +309,34 @@ class KotRequest {
         jsonArrayRequestCallback?.invoke(null, kotError)
         stringRequestCallback?.invoke(null, kotError)
         downloadCallback?.invoke(kotError)
+        mOkHttpResponseListener?.invoke(null, kotError)
 
     }
 
     fun deliverOkHttpResponse(okHttpResponse: Response) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        try {
+            isDelivered = true
+            if (!isCancelled) {
+                executor?.execute { mOkHttpResponseListener?.invoke(okHttpResponse, null) } ?:
+                        Core.instance.executorSupplier.forMainThreadTasks().execute { mOkHttpResponseListener?.invoke(okHttpResponse, null) }
+            } else {
+                val kotError: KotError = KotError()
+                kotError.errorDetail = KotConstants.REQUEST_CANCELLED_ERROR
+                kotError.errorCode = 0
+                mOkHttpResponseListener?.invoke(null, kotError)
+                finish()
+            }
+        } catch(ex: Exception) {
+            ex.printStackTrace()
+        }
     }
 
     fun deliverResponse(kotResponse: KotResponse<*>) {
         try {
             isDelivered = true
             if (!isCancelled) {
-                if (executor != null) {
-                    executor?.execute({ deliverSuccessResponse(kotResponse) })
-                } else {
-                    Core.instance.executorSupplier.forNetworkTasks().execute { deliverSuccessResponse(kotResponse) }
-                }
+                executor?.execute { deliverSuccessResponse(kotResponse) } ?:
+                        Core.instance.executorSupplier.forMainThreadTasks().execute{ deliverSuccessResponse(kotResponse) }
             } else {
                 val kotError: KotError = KotError()
                 kotError.errorDetail = KotConstants.REQUEST_CANCELLED_ERROR
