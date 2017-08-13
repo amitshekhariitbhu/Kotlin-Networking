@@ -29,6 +29,7 @@ import com.mindorks.kotnetworking.KotNetworking
 import com.mindorks.kotnetworking.common.Priority
 import com.mindorks.sample.util.FilePickUtils
 import java.io.File
+import java.io.IOException
 
 
 class MultiPartApiTestActivity : AppCompatActivity() {
@@ -113,6 +114,36 @@ class MultiPartApiTestActivity : AppCompatActivity() {
                         Log.d(TAG, result.toString())
                     }
                 }
+
+        KotNetworking.upload(ApiEndPoint.UPLOAD_IMAGE)
+                .addMultiPartFile("image", File(filePath))
+                .setTag(this).setPriority(Priority.MEDIUM)
+                .build()
+                .setAnalyticsListener { timeTakenInMillis, bytesSent, bytesReceived, isFromCache ->
+                    println("timeTakenInMillis ---> $timeTakenInMillis")
+                    println("bytesSent ---> $bytesSent")
+                    println("bytesReceived ---> $bytesReceived")
+                    println("isFromCache ---> $isFromCache")
+                }
+                .setUploadProgressListener { bytesDownloaded, totalBytes ->
+                    Log.i(TAG, "setUploadProgressListener : " +
+                            "Bytes Upload $bytesDownloaded/$totalBytes ")
+                }
+                .getAsOkHttpResponse { response, error ->
+                    response?.apply {
+                        if (isSuccessful) {
+                            try {
+                                Log.d(MultiPartApiTestActivity.TAG, "response : ${body().source().readUtf8()}")
+                            } catch (ioe: IOException) {
+                                ioe.printStackTrace()
+                            }
+                        }
+                    }
+
+                    error?.let {
+                        Log.d(MultiPartApiTestActivity.TAG, error.toString())
+                    }
+                }
     }
 
 
@@ -138,7 +169,6 @@ class MultiPartApiTestActivity : AppCompatActivity() {
                 .checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
                 PackageManager.PERMISSION_GRANTED
     }
-
 
 
 }

@@ -23,6 +23,7 @@ import android.view.View
 import com.mindorks.kotnetworking.KotNetworking
 import com.mindorks.kotnetworking.common.Priority
 import com.mindorks.sample.util.Utils
+import java.io.IOException
 
 class GetApiTestActivity : AppCompatActivity() {
 
@@ -51,6 +52,28 @@ class GetApiTestActivity : AppCompatActivity() {
                         Log.d(TAG, response.toString())
                     }
                 }
+
+        KotNetworking.get(ApiEndPoint.GET_JSON_OBJECT)
+                .addPathParameter("userId", "1")
+                .setTag(this)
+                .setPriority(Priority.MEDIUM)
+                .build()
+                .getAsOkHttpResponse { response, error ->
+                    response?.apply {
+                        if (isSuccessful) {
+                            try {
+                                Log.d(TAG, "response : ${body().source().readUtf8()}")
+                            } catch (ioe: IOException) {
+                                ioe.printStackTrace()
+                            }
+                        }
+                    }
+
+                    error?.let {
+                        Log.d(TAG, error.toString())
+                    }
+
+                }
     }
 
     fun getAsJSONArray(view: View) {
@@ -73,6 +96,35 @@ class GetApiTestActivity : AppCompatActivity() {
                         Log.d(TAG, response.toString())
                     }
                 }
+
+        KotNetworking.get(ApiEndPoint.GET_JSON_ARRAY)
+                .addPathParameter("pageNumber", "0")
+                .addQueryParameter("limit", "3")
+                .setTag(this)
+                .setPriority(Priority.MEDIUM)
+                .build()
+                .setAnalyticsListener { timeTakenInMillis, bytesSent, bytesReceived, isFromCache ->
+                    println("timeTakenInMillis ---> $timeTakenInMillis")
+                    println("bytesSent ---> $bytesSent")
+                    println("bytesReceived ---> $bytesReceived")
+                    println("isFromCache ---> $isFromCache")
+                }
+                .getAsOkHttpResponse { response, error ->
+                    response?.apply {
+                        if (isSuccessful) {
+                            try {
+                                Log.d(TAG, "response : ${body().source().readUtf8()}")
+                            } catch (ioe: IOException) {
+                                ioe.printStackTrace()
+                            }
+                        }
+                    }
+
+                    error?.let {
+                        Log.d(TAG, error.toString())
+                    }
+
+                }
     }
 
     fun getAsJSONObject(view: View) {
@@ -93,6 +145,34 @@ class GetApiTestActivity : AppCompatActivity() {
                     } else {
                         Log.d(TAG, response.toString())
                     }
+                }
+
+        KotNetworking.get(ApiEndPoint.GET_JSON_OBJECT)
+                .addPathParameter("userId", "1")
+                .setTag(this)
+                .setPriority(Priority.MEDIUM)
+                .build()
+                .setAnalyticsListener { timeTakenInMillis, bytesSent, bytesReceived, isFromCache ->
+                    println("timeTakenInMillis ---> $timeTakenInMillis")
+                    println("bytesSent ---> $bytesSent")
+                    println("bytesReceived ---> $bytesReceived")
+                    println("isFromCache ---> $isFromCache")
+                }
+                .getAsOkHttpResponse { response, error ->
+                    response?.apply {
+                        if (isSuccessful) {
+                            try {
+                                Log.d(TAG, "response : ${body().source().readUtf8()}")
+                            } catch (ioe: IOException) {
+                                ioe.printStackTrace()
+                            }
+                        }
+                    }
+
+                    error?.let {
+                        Log.d(TAG, error.toString())
+                    }
+
                 }
     }
 
@@ -116,6 +196,32 @@ class GetApiTestActivity : AppCompatActivity() {
                         Log.d(TAG, "completed")
                     }
                 }
+        KotNetworking.download(imageUrl, dirPath, fileName)
+                .setPriority(Priority.HIGH)
+                .build()
+                .setAnalyticsListener { timeTakenInMillis, bytesSent, bytesReceived, isFromCache ->
+                    println("timeTakenInMillis ---> $timeTakenInMillis")
+                    println("bytesSent ---> $bytesSent")
+                    println("bytesReceived ---> $bytesReceived")
+                    println("isFromCache ---> $isFromCache")
+                }
+                .getAsOkHttpResponse { response, error ->
+                    response?.apply {
+                        if (isSuccessful) {
+                            try {
+                                Log.d(TAG, "response : ${body().source().readUtf8()}")
+                            } catch (ioe: IOException) {
+                                ioe.printStackTrace()
+                            }
+                        }
+                    }
+
+                    error?.let {
+                        Log.d(TAG, error.toString())
+                    }
+
+                }
+
     }
 
 }

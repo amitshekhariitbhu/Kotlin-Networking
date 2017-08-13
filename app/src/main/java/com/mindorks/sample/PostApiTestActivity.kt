@@ -25,6 +25,7 @@ import com.mindorks.kotnetworking.common.Priority
 import com.mindorks.sample.model.User
 import org.json.JSONException
 import org.json.JSONObject
+import java.io.IOException
 
 class PostApiTestActivity : AppCompatActivity() {
 
@@ -61,6 +62,34 @@ class PostApiTestActivity : AppCompatActivity() {
                                 Log.d(PostApiTestActivity.TAG, response.toString())
                             }
                         }
+
+                KotNetworking.post(ApiEndPoint.POST_CREATE_AN_USER)
+                        .addBodyParameter("firstname", "Suman")
+                        .addBodyParameter("lastname", "Shekhar")
+                        .setTag(this)
+                        .setPriority(Priority.MEDIUM)
+                        .build()
+                        .setAnalyticsListener { timeTakenInMillis, bytesSent, bytesReceived, isFromCache ->
+                            println("timeTakenInMillis ---> $timeTakenInMillis")
+                            println("bytesSent ---> $bytesSent")
+                            println("bytesReceived ---> $bytesReceived")
+                            println("isFromCache ---> $isFromCache")
+                        }
+                        .getAsOkHttpResponse { response, error ->
+                            response?.apply {
+                                if (isSuccessful) {
+                                    try {
+                                        Log.d(PostApiTestActivity.TAG, "response : ${body().source().readUtf8()}")
+                                    } catch (ioe: IOException) {
+                                        ioe.printStackTrace()
+                                    }
+                                }
+                            }
+
+                            error?.let {
+                                Log.d(PostApiTestActivity.TAG, error.toString())
+                            }
+                        }
             }
 
             R.id.btn_post_as_json_array -> {
@@ -81,6 +110,34 @@ class PostApiTestActivity : AppCompatActivity() {
                                 Log.d(PostApiTestActivity.TAG, error.toString())
                             } else {
                                 Log.d(PostApiTestActivity.TAG, response.toString())
+                            }
+                        }
+
+                KotNetworking.post(ApiEndPoint.POST_CREATE_AN_USER)
+                        .addBodyParameter("firstname", "Suman")
+                        .addBodyParameter("lastname", "Shekhar")
+                        .setTag(this)
+                        .setPriority(Priority.MEDIUM)
+                        .build()
+                        .setAnalyticsListener { timeTakenInMillis, bytesSent, bytesReceived, isFromCache ->
+                            println("timeTakenInMillis ---> $timeTakenInMillis")
+                            println("bytesSent ---> $bytesSent")
+                            println("bytesReceived ---> $bytesReceived")
+                            println("isFromCache ---> $isFromCache")
+                        }
+                        .getAsOkHttpResponse { response, error ->
+                            response?.apply {
+                                if (isSuccessful) {
+                                    try {
+                                        Log.d(PostApiTestActivity.TAG, "response : ${body().source().readUtf8()}")
+                                    } catch (ioe: IOException) {
+                                        ioe.printStackTrace()
+                                    }
+                                }
+                            }
+
+                            error?.let {
+                                Log.d(PostApiTestActivity.TAG, error.toString())
                             }
                         }
             }
@@ -105,6 +162,34 @@ class PostApiTestActivity : AppCompatActivity() {
                                 Log.d(PostApiTestActivity.TAG, response.toString())
                             }
                         }
+
+                KotNetworking.post(ApiEndPoint.POST_CREATE_AN_USER)
+                        .addBodyParameter("firstname", "Suman")
+                        .addBodyParameter("lastname", "Shekhar")
+                        .setTag(this)
+                        .setPriority(Priority.MEDIUM)
+                        .build()
+                        .setAnalyticsListener { timeTakenInMillis, bytesSent, bytesReceived, isFromCache ->
+                            println("timeTakenInMillis ---> $timeTakenInMillis")
+                            println("bytesSent ---> $bytesSent")
+                            println("bytesReceived ---> $bytesReceived")
+                            println("isFromCache ---> $isFromCache")
+                        }
+                        .getAsOkHttpResponse { response, error ->
+                            response?.apply {
+                                if (isSuccessful) {
+                                    try {
+                                        Log.d(PostApiTestActivity.TAG, "response : ${body().source().readUtf8()}")
+                                    } catch (ioe: IOException) {
+                                        ioe.printStackTrace()
+                                    }
+                                }
+                            }
+
+                            error?.let {
+                                Log.d(PostApiTestActivity.TAG, error.toString())
+                            }
+                        }
             }
 
             R.id.btn_check_header -> {
@@ -126,6 +211,34 @@ class PostApiTestActivity : AppCompatActivity() {
                                 Log.d(PostApiTestActivity.TAG, response.toString())
                             }
                         }
+
+                KotNetworking.post(ApiEndPoint.CHECK_FOR_HEADER)
+                        .addHeaders("token", "1234")
+                        .setTag(this)
+                        .setPriority(Priority.MEDIUM)
+                        .build()
+                        .setAnalyticsListener { timeTakenInMillis, bytesSent, bytesReceived, isFromCache ->
+                            println("timeTakenInMillis ---> $timeTakenInMillis")
+                            println("bytesSent ---> $bytesSent")
+                            println("bytesReceived ---> $bytesReceived")
+                            println("isFromCache ---> $isFromCache")
+                        }
+                        .getAsOkHttpResponse { response, error ->
+                            response?.apply {
+                                if (isSuccessful) {
+                                    try {
+                                        Log.d(PostApiTestActivity.TAG, "response : ${body().source().readUtf8()}")
+                                    } catch (ioe: IOException) {
+                                        ioe.printStackTrace()
+                                    }
+                                }
+                            }
+
+                            error?.let {
+                                Log.d(PostApiTestActivity.TAG, error.toString())
+                            }
+                        }
+
             }
 
             R.id.btn_create_user -> {
@@ -154,6 +267,33 @@ class PostApiTestActivity : AppCompatActivity() {
                                 Log.d(PostApiTestActivity.TAG, response.toString())
                             }
                         }
+
+                KotNetworking.post(ApiEndPoint.POST_CREATE_AN_USER)
+                        .addApplicationJsonBody(jsonObject)
+                        .setTag(this)
+                        .setPriority(Priority.MEDIUM)
+                        .build()
+                        .setAnalyticsListener { timeTakenInMillis, bytesSent, bytesReceived, isFromCache ->
+                            println("timeTakenInMillis ---> $timeTakenInMillis")
+                            println("bytesSent ---> $bytesSent")
+                            println("bytesReceived ---> $bytesReceived")
+                            println("isFromCache ---> $isFromCache")
+                        }
+                        .getAsOkHttpResponse { response, error ->
+                            response?.apply {
+                                if (isSuccessful) {
+                                    try {
+                                        Log.d(PostApiTestActivity.TAG, "response : ${body().source().readUtf8()}")
+                                    } catch (ioe: IOException) {
+                                        ioe.printStackTrace()
+                                    }
+                                }
+                            }
+
+                            error?.let {
+                                Log.d(PostApiTestActivity.TAG, error.toString())
+                            }
+                        }
             }
 
             R.id.btn_create_new_user -> {
@@ -176,6 +316,33 @@ class PostApiTestActivity : AppCompatActivity() {
                                 Log.d(PostApiTestActivity.TAG, error.toString())
                             } else {
                                 Log.d(PostApiTestActivity.TAG, response.toString())
+                            }
+                        }
+
+                KotNetworking.post(ApiEndPoint.POST_CREATE_AN_USER)
+                        .addApplicationJsonBody(user)
+                        .setTag(this)
+                        .setPriority(Priority.MEDIUM)
+                        .build()
+                        .setAnalyticsListener { timeTakenInMillis, bytesSent, bytesReceived, isFromCache ->
+                            println("timeTakenInMillis ---> $timeTakenInMillis")
+                            println("bytesSent ---> $bytesSent")
+                            println("bytesReceived ---> $bytesReceived")
+                            println("isFromCache ---> $isFromCache")
+                        }
+                        .getAsOkHttpResponse { response, error ->
+                            response?.apply {
+                                if (isSuccessful) {
+                                    try {
+                                        Log.d(PostApiTestActivity.TAG, "response : ${body().source().readUtf8()}")
+                                    } catch (ioe: IOException) {
+                                        ioe.printStackTrace()
+                                    }
+                                }
+                            }
+
+                            error?.let {
+                                Log.d(PostApiTestActivity.TAG, error.toString())
                             }
                         }
             }
