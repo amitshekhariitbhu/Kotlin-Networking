@@ -19,17 +19,20 @@ package com.mindorks.kotnetworking.request
 import com.mindorks.kotnetworking.common.*
 import com.mindorks.kotnetworking.core.Core
 import com.mindorks.kotnetworking.error.KotError
+import com.mindorks.kotnetworking.interfaces.Parser
 import com.mindorks.kotnetworking.internal.KotRequestQueue
 import com.mindorks.kotnetworking.requestbuidler.DownloadBuilder
 import com.mindorks.kotnetworking.requestbuidler.GetRequestBuilder
 import com.mindorks.kotnetworking.requestbuidler.MultipartRequestBuilder
 import com.mindorks.kotnetworking.requestbuidler.PostRequestBuilder
 import com.mindorks.kotnetworking.utils.KotUtils
+import com.mindorks.kotnetworking.utils.ParseUtil
 import okhttp3.*
 import okio.Okio
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
+import java.lang.reflect.Type
 import java.util.concurrent.Executor
 import java.util.concurrent.Future
 
@@ -54,6 +57,7 @@ class KotRequest {
     var jsonArrayRequestCallback: ((response: JSONArray?, error: KotError?) -> Unit)? = null
     var stringRequestCallback: ((response: String?, error: KotError?) -> Unit)? = null
     var mOkHttpResponseListener: ((response: Response?, error: KotError?) -> Unit)? = null
+    var mParsedResponseListener: ((response: Any?, error: KotError?) -> Unit)? = null
     var downloadCallback: ((error: KotError?) -> Unit)? = null
     var requestType: RequestType
     var responseType: ResponseType? = null
@@ -70,6 +74,7 @@ class KotRequest {
     var future: Future<*>? = null
     var uploadProgressListener: ((bytesDownloaded: Long, totalBytes: Long) -> Unit)? = null
     var analyticsListener: ((timeTakenInMillis: Long, bytesSent: Long, bytesReceived: Long, isFromCache: Boolean) -> Unit)? = null
+    var mType: Type? = null
 
 
     private var applicationJsonString: String? = null
@@ -192,6 +197,13 @@ class KotRequest {
         KotRequestQueue.instance.addRequest(this)
     }
 
+    fun getAsParseResponse(type: Class<*>, handler: (response: Any?, error: KotError?) -> Unit) {
+        this.responseType = ResponseType.PARSED
+        this.mParsedResponseListener = handler
+        this.mType = type
+        KotRequestQueue.instance.addRequest(this)
+    }
+
     fun getFormattedUrl(): String {
         var tempUrl = url
 
@@ -301,6 +313,8 @@ class KotRequest {
         jsonArrayRequestCallback?.invoke(kotResponse.result as JSONArray?, null)
         stringRequestCallback?.invoke(kotResponse.result as String?, null)
         downloadCallback?.invoke(null)
+        mParsedResponseListener?.invoke(kotResponse.result, null)
+
         finish()
     }
 
@@ -310,6 +324,7 @@ class KotRequest {
         stringRequestCallback?.invoke(null, kotError)
         downloadCallback?.invoke(kotError)
         mOkHttpResponseListener?.invoke(null, kotError)
+        mParsedResponseListener?.invoke(null, kotError)
 
     }
 
@@ -398,6 +413,14 @@ class KotRequest {
             }
 
             ResponseType.PARSED -> {
+                var result: Any?
+                ParseUtil.parserFactory?.let {
+                    result = (ParseUtil.parserFactory as Parser.Factory)
+                            .responseBodyParser(mType as Type)?.convert(response.body())
+                    return KotResponse.success(result)
+                }
+
+                return KotResponse.failed(KotError("Something wrong"))
             }
 
             else -> {
