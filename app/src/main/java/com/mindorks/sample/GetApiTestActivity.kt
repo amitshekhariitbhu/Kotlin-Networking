@@ -22,6 +22,7 @@ import android.util.Log
 import android.view.View
 import com.mindorks.kotnetworking.KotNetworking
 import com.mindorks.kotnetworking.common.Priority
+import com.mindorks.sample.model.User
 import com.mindorks.sample.util.Utils
 import java.io.IOException
 
@@ -146,6 +147,21 @@ class GetApiTestActivity : AppCompatActivity() {
                         Log.d(TAG, response.toString())
                     }
                 }
+
+        KotNetworking.get(ApiEndPoint.GET_JSON_OBJECT)
+                .addPathParameter("userId", "1")
+                .setTag(this)
+                .setPriority(Priority.MEDIUM)
+                .build()
+                .setAnalyticsListener { timeTakenInMillis, bytesSent, bytesReceived, isFromCache ->
+                    println("timeTakenInMillis ---> $timeTakenInMillis")
+                    println("bytesSent ---> $bytesSent")
+                    println("bytesReceived ---> $bytesReceived")
+                    println("isFromCache ---> $isFromCache")
+                }
+                .getAsParseResponse(User::class.java, { response, error ->
+                    println("Parsed Response $response")
+                })
 
         KotNetworking.get(ApiEndPoint.GET_JSON_OBJECT)
                 .addPathParameter("userId", "1")

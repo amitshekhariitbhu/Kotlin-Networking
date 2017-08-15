@@ -6,4 +6,10 @@ package com.mindorks.sample.model
 class User {
     var firstname: String? = null
     var lastname: String? = null
+
+    override fun toString(): String {
+        return "User(firstname=$firstname, lastname=$lastname)"
+    }
+
+
 }
