@@ -221,6 +221,10 @@ class GetApiTestActivity : AppCompatActivity() {
                     println("bytesReceived ---> $bytesReceived")
                     println("isFromCache ---> $isFromCache")
                 }
+                .setDownloadProgressListener { bytesDownloaded, totalBytes ->
+                    println("bytesDownloaded ---> $bytesDownloaded")
+                    println("totalBytes ---> $totalBytes")
+                }
                 .getAsOkHttpResponse { response, error ->
                     response?.apply {
                         if (isSuccessful) {
