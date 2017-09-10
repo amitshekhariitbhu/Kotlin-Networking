@@ -17,6 +17,7 @@
 package com.mindorks.kotnetworking.internal
 
 import com.mindorks.kotnetworking.common.KotConstants
+import com.mindorks.kotnetworking.common.Progress
 import okhttp3.MediaType
 import okhttp3.ResponseBody
 import okio.*
@@ -54,7 +55,8 @@ class ResponseProgressBody(private val responseBody: ResponseBody, progressCallb
             override fun read(sink: Buffer, byteCount: Long): Long {
                 val bytesRead = super.read(sink, byteCount)
                 totalBytesRead += if (bytesRead != -1L) bytesRead else 0
-                progressHandler?.obtainMessage(KotConstants.UPDATE, responseBody.contentLength())?.sendToTarget()
+                val progress: Progress = Progress(totalBytesRead, responseBody.contentLength())
+                progressHandler?.obtainMessage(KotConstants.UPDATE, progress)?.sendToTarget()
                 return bytesRead
             }
         }

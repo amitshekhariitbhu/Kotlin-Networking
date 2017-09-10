@@ -77,6 +77,7 @@ class KotRequest {
     var mType: Type? = null
 
 
+    private var downloadProgressListener: ((bytesDownloaded: Long, totalBytes: Long) -> Unit)? = null
     private var applicationJsonString: String? = null
     private var stringBody: String? = null
     private var file: File? = null
@@ -167,6 +168,11 @@ class KotRequest {
 
     fun setAnalyticsListener(analyticsListener: (timeTakenInMillis: Long, bytesSent: Long, bytesReceived: Long, isFromCache: Boolean) -> Unit): KotRequest {
         this.analyticsListener = analyticsListener
+        return this
+    }
+
+    fun setDownloadProgressListener(downloadProgressListener: (bytesDownloaded: Long, totalBytes: Long) -> Unit): KotRequest {
+        this.downloadProgressListener = downloadProgressListener
         return this
     }
     //endregion
@@ -285,6 +291,15 @@ class KotRequest {
         return builder.build()
     }
 
+    fun getDownloadProgressListener(): ((Long, Long) -> Unit)? {
+        return { bytesDownloaded: Long, totalBytes: Long ->
+            if (!isCancelled) {
+                downloadProgressListener?.invoke(bytesDownloaded, totalBytes)
+            }
+        }
+    }
+
+
     fun startDownload(handler: (kotError: KotError?) -> Unit) {
         downloadCallback = handler
         KotRequestQueue.instance.addRequest(this)
@@ -351,7 +366,7 @@ class KotRequest {
             isDelivered = true
             if (!isCancelled) {
                 executor?.execute { deliverSuccessResponse(kotResponse) } ?:
-                        Core.instance.executorSupplier.forMainThreadTasks().execute{ deliverSuccessResponse(kotResponse) }
+                        Core.instance.executorSupplier.forMainThreadTasks().execute { deliverSuccessResponse(kotResponse) }
             } else {
                 val kotError: KotError = KotError()
                 kotError.errorDetail = KotConstants.REQUEST_CANCELLED_ERROR
@@ -459,7 +474,21 @@ class KotRequest {
     //endregion
 
     //region finisher
+    fun destroy() {
+        downloadProgressListener = null
+        jsonObjectRequestCallback = null
+        jsonArrayRequestCallback = null
+        stringRequestCallback = null
+        mOkHttpResponseListener = null
+        mParsedResponseListener = null
+        downloadCallback = null
+        uploadProgressListener = null
+        analyticsListener = null
+
+    }
+
     fun finish() {
+        destroy()
         KotRequestQueue.instance.finish(this)
     }
     //endregion

@@ -17,13 +17,16 @@
 package com.mindorks.kotnetworking.internal
 
 import android.net.TrafficStats
+import com.mindorks.kotnetworking.common.ConnectionClassManager
 import com.mindorks.kotnetworking.common.KotConstants
 import com.mindorks.kotnetworking.common.Method
 import com.mindorks.kotnetworking.error.KotError
 import com.mindorks.kotnetworking.request.KotRequest
 import com.mindorks.kotnetworking.utils.KotUtils
-import com.mindorks.kotnetworking.common.ConnectionClassManager
-import okhttp3.*
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody
+import okhttp3.Response
 import java.io.File
 import java.io.IOException
 import java.util.concurrent.TimeUnit
@@ -35,7 +38,7 @@ class InternalNetworking private constructor() {
 
     companion object {
 
-        var okHttpClient: OkHttpClient = defaultOkHttpClient()
+        var sOkHttpClient: OkHttpClient = defaultOkHttpClient()
         var userAgent: String? = null
 
         fun defaultOkHttpClient(): OkHttpClient = OkHttpClient()
@@ -87,9 +90,9 @@ class InternalNetworking private constructor() {
                 okHttpRequest = builder.build()
 
                 if (kotRequest.okHttpClient != null)
-                    kotRequest.call = kotRequest.okHttpClient?.newBuilder()?.cache(okHttpClient.cache())?.build()?.newCall(okHttpRequest)
+                    kotRequest.call = kotRequest.okHttpClient?.newBuilder()?.cache(sOkHttpClient.cache())?.build()?.newCall(okHttpRequest)
                 else
-                    kotRequest.call = okHttpClient.newCall(okHttpRequest)
+                    kotRequest.call = sOkHttpClient.newCall(okHttpRequest)
 
                 val startTime = System.currentTimeMillis()
                 val startBytes = TrafficStats.getTotalRxBytes()
@@ -142,7 +145,25 @@ class InternalNetworking private constructor() {
                 kotRequest.cacheControl?.let { builder.cacheControl(it) }
                 okHttpRequest = builder.build()
 
-                kotRequest.call = okHttpClient.newCall(okHttpRequest)
+                val okHttpClient = if (kotRequest.okHttpClient != null) {
+                    kotRequest.okHttpClient?.newBuilder()
+                            ?.cache(sOkHttpClient.cache())
+                            ?.addInterceptor { chain ->
+                                val response: Response = chain.proceed(chain.request())
+                                response.newBuilder()
+                                        .body(ResponseProgressBody(response.body(), kotRequest.getDownloadProgressListener()))
+                                        .build()
+                            }?.build()
+                } else {
+                    sOkHttpClient.newBuilder().addInterceptor { chain ->
+                        val response: Response = chain.proceed(chain.request())
+                        response.newBuilder()
+                                .body(ResponseProgressBody(response.body(), kotRequest.getDownloadProgressListener()))
+                                .build()
+                    }?.build()
+                }
+
+                kotRequest.call = okHttpClient?.newCall(okHttpRequest)
 
                 val startTime = System.currentTimeMillis()
                 val startBytes = TrafficStats.getTotalRxBytes()
@@ -200,9 +221,9 @@ class InternalNetworking private constructor() {
 
                 if (kotRequest.okHttpClient != null) {
                     kotRequest.call = kotRequest.okHttpClient?.newBuilder()
-                            ?.cache(okHttpClient.cache())?.build()?.newCall(okHttpRequest)
+                            ?.cache(sOkHttpClient.cache())?.build()?.newCall(okHttpRequest)
                 } else {
-                    kotRequest.call = okHttpClient.newCall(okHttpRequest)
+                    kotRequest.call = sOkHttpClient.newCall(okHttpRequest)
                 }
 
                 val startTime = System.currentTimeMillis()
