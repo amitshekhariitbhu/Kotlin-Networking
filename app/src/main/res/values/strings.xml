@@ -30,4 +30,5 @@
     <string name="create_new_user_object">create user Object</string>
     <string name="select_image_text">Select Image</string>
     <string name="download_image">Download Image</string>
+    <string name="send_and_cancel">Send And Cancel</string>
 </resources>

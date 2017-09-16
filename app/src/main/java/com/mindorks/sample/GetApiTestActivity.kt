@@ -212,6 +212,76 @@ class GetApiTestActivity : AppCompatActivity() {
                         Log.d(TAG, "completed")
                     }
                 }
+
+
+        val cancelTag: String = "HollyMolly"
+
+        KotNetworking.download(imageUrl, dirPath, fileName)
+                .setPriority(Priority.HIGH)
+                .setTag(cancelTag)
+                .build()
+                .setAnalyticsListener { timeTakenInMillis, bytesSent, bytesReceived, isFromCache ->
+                    println("timeTakenInMillis ---> $timeTakenInMillis")
+                    println("bytesSent ---> $bytesSent")
+                    println("bytesReceived ---> $bytesReceived")
+                    println("isFromCache ---> $isFromCache")
+                }
+                .setDownloadProgressListener { bytesDownloaded, totalBytes ->
+                    println("bytesDownloaded ---> $bytesDownloaded")
+                    println("totalBytes ---> $totalBytes")
+                }
+                .getAsOkHttpResponse { response, error ->
+                    response?.apply {
+                        if (isSuccessful) {
+                            try {
+                                Log.d(TAG, "response : ${body().source().readUtf8()}")
+                            } catch (ioe: IOException) {
+                                ioe.printStackTrace()
+                            }
+                        }
+                    }
+
+                    error?.let {
+                        Log.d(TAG, error.toString())
+                    }
+
+                }
+
+        KotNetworking.cancel(cancelTag)
+    }
+
+    fun sendAndCancelAll(view: View) {
+        val imageUrl: String = "http://i.imgur.com/AtbX9iX.png"
+        val dirPath: String = Utils.getRootDirPath(applicationContext)
+        val fileName: String = "Img_1.jpg"
+
+        KotNetworking.get(ApiEndPoint.GET_JSON_OBJECT)
+                .addPathParameter("userId", "1")
+                .setPriority(Priority.MEDIUM)
+                .build()
+                .setAnalyticsListener { timeTakenInMillis, bytesSent, bytesReceived, isFromCache ->
+                    println("timeTakenInMillis ---> $timeTakenInMillis")
+                    println("bytesSent ---> $bytesSent")
+                    println("bytesReceived ---> $bytesReceived")
+                    println("isFromCache ---> $isFromCache")
+                }
+                .getAsOkHttpResponse { response, error ->
+                    response?.apply {
+                        if (isSuccessful) {
+                            try {
+                                Log.d(TAG, "response : ${body().source().readUtf8()}")
+                            } catch (ioe: IOException) {
+                                ioe.printStackTrace()
+                            }
+                        }
+                    }
+
+                    error?.let {
+                        Log.d(TAG, error.toString())
+                    }
+
+                }
+
         KotNetworking.download(imageUrl, dirPath, fileName)
                 .setPriority(Priority.HIGH)
                 .build()
@@ -242,6 +312,7 @@ class GetApiTestActivity : AppCompatActivity() {
 
                 }
 
+        KotNetworking.cancelAll()
     }
 
 }
