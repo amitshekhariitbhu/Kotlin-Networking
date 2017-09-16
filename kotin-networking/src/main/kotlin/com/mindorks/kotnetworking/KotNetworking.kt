@@ -18,6 +18,7 @@ package com.mindorks.kotnetworking
 
 import android.content.Context
 import com.mindorks.kotnetworking.common.Method
+import com.mindorks.kotnetworking.internal.KotRequestQueue
 import com.mindorks.kotnetworking.requestbuidler.DownloadBuilder
 import com.mindorks.kotnetworking.requestbuidler.GetRequestBuilder
 import com.mindorks.kotnetworking.requestbuidler.MultipartRequestBuilder
@@ -57,6 +58,17 @@ class KotNetworking private constructor() {
 
         fun download(url: String, dirPath: String, fileName: String): DownloadBuilder {
             return DownloadBuilder(url, dirPath, fileName)
+        }
+
+        fun cancelAll() {
+            KotRequestQueue.instance.cancelAll(false)
+        }
+        fun forceCancelAll() {
+            KotRequestQueue.instance.cancelAll(true)
+        }
+
+        fun cancel(tag: Any) {
+            KotRequestQueue.instance.cancelRequestWithGivenTag(tag, false)
         }
 
     }

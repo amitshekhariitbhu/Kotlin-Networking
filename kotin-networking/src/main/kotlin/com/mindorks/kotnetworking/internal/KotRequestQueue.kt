@@ -16,8 +16,10 @@
 
 package com.mindorks.kotnetworking.internal
 
+import com.mindorks.kotnetworking.common.Priority
 import com.mindorks.kotnetworking.core.Core
 import com.mindorks.kotnetworking.request.KotRequest
+import org.jetbrains.annotations.NotNull
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
@@ -26,7 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger
 class KotRequestQueue private constructor() {
 
     val sequenceGenerator: AtomicInteger = AtomicInteger()
-    var currentRequest: Set<KotRequest> = mutableSetOf()
+    var currentRequest: MutableSet<KotRequest> = mutableSetOf()
 
     private object Holder {
         val INSTANCE = KotRequestQueue()
@@ -39,7 +41,7 @@ class KotRequestQueue private constructor() {
     fun addRequest(request: KotRequest) {
         synchronized(currentRequest) {
             try {
-                currentRequest.plus(request)
+                currentRequest.add(request)
             } catch (ex: Exception) {
                 ex.printStackTrace()
             }
@@ -47,10 +49,24 @@ class KotRequestQueue private constructor() {
 
         try {
             request.sequenceNumber = getSequenceNumber()
-            var future = Core.instance
-                    .executorSupplier
-                    .forNetworkTasks()
-                    .submit(KotRunnable(request))
+
+            request.future = when (request.priority) {
+
+                Priority.IMMEDIATE -> {
+                    Core.instance
+                            .executorSupplier
+                            .forImmediateNetworkTasks()
+                            .submit(KotRunnable(request))
+                }
+
+                else -> {
+                    Core.instance
+                            .executorSupplier
+                            .forNetworkTasks()
+                            .submit(KotRunnable(request))
+                }
+            }
+
         } catch (ex: Exception) {
             ex.printStackTrace()
         }
@@ -58,10 +74,61 @@ class KotRequestQueue private constructor() {
 
     private fun getSequenceNumber(): Int = sequenceGenerator.incrementAndGet()
 
-    fun finish(kotRequest: KotRequest) {
+
+    fun cancelRequestWithGivenTag(@NotNull tag: Any, forceCancel: Boolean) {
         synchronized(currentRequest) {
-            currentRequest.minus(kotRequest)
+            cancel(object : RequestFilter {
+                override fun apply(request: KotRequest): Boolean {
+                    if (tag is String && request.tag is String) {
+                        return tag == request.tag
+                    } else {
+                        return tag === request.tag
+                    }
+                }
+            }, forceCancel)
         }
     }
 
+    fun cancel(requestFilter: RequestFilter, forceCancel: Boolean) {
+        synchronized(currentRequest) {
+            val iterator: MutableIterator<KotRequest> = currentRequest.iterator()
+            while (iterator.hasNext()) {
+                with(iterator.next() /*KotRequest*/) {
+                    if (requestFilter.apply(this /*KotRequest*/)) {
+                        cancel(forceCancel)
+                        if (isCancelled) {
+                            destroy()
+                            iterator.remove()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fun cancelAll(forceCancel: Boolean) {
+        synchronized(currentRequest) {
+            val iterator: MutableIterator<KotRequest> = currentRequest.iterator()
+            while (iterator.hasNext()) {
+                with(iterator.next() /*KotRequest*/) {
+                    cancel(forceCancel)
+                    if (isCancelled) {
+                        destroy()
+                        iterator.remove()
+                    }
+                }
+            }
+        }
+    }
+
+    fun finish(kotRequest: KotRequest) {
+        synchronized(currentRequest) {
+            currentRequest.remove(kotRequest)
+        }
+    }
+
+
+    interface RequestFilter {
+        fun apply(request: KotRequest): Boolean
+    }
 }

@@ -50,6 +50,7 @@ class KotRequest {
     var bodyParameterMap: MutableMap<String, String>? = null
     var urlEncodedFormBodyParameterMap: MutableMap<String, String>? = null
     var headersMap: MutableMap<String, String>
+    val tag: Any?
     val queryParameterMap: MutableMap<String, String>
     val pathParameterMap: MutableMap<String, String>
     val multiPartFileMap: MutableMap<String, File> = mutableMapOf()
@@ -68,6 +69,7 @@ class KotRequest {
     var call: Call? = null
     var priority: Priority
     var sequenceNumber: Int = 0
+    var progress: Int = 0
     var percentageThresholdForCancelling: Int = 0
     var isCancelled = false
     var isDelivered = false
@@ -101,6 +103,7 @@ class KotRequest {
         this.executor = getRequestBuilder.executor
         this.okHttpClient = getRequestBuilder.okHttpClient
         this.userAgent = getRequestBuilder.userAgent
+        this.tag = getRequestBuilder.tag
     }
 
     constructor(postRequestBuilder: PostRequestBuilder) {
@@ -122,6 +125,7 @@ class KotRequest {
         this.executor = postRequestBuilder.executor
         this.okHttpClient = postRequestBuilder.okHttpClient
         this.userAgent = postRequestBuilder.userAgent
+        this.tag = postRequestBuilder.tag
     }
 
 
@@ -135,10 +139,11 @@ class KotRequest {
         multipartRequestBuilder.mCustomContentType?.let { mediaType -> this.customMediaType = MediaType.parse(mediaType) }
         this.requestType = RequestType.MULTIPART
         this.cacheControl = multipartRequestBuilder.cacheControl
+        this.percentageThresholdForCancelling = multipartRequestBuilder.mPercentageThresholdForCancelling
         this.executor = multipartRequestBuilder.executor
         this.okHttpClient = multipartRequestBuilder.okHttpClient
         this.userAgent = multipartRequestBuilder.userAgent
-
+        this.tag = multipartRequestBuilder.tag
         this.multiPartFileMap.putAll(multipartRequestBuilder.mMultiPartFileMap)
     }
 
@@ -157,6 +162,7 @@ class KotRequest {
         this.executor = downloadBuilder.executor
         this.okHttpClient = downloadBuilder.okHttpClient
         this.userAgent = downloadBuilder.userAgent
+        this.tag = downloadBuilder.tag
     }
     //endregion
 
@@ -474,6 +480,21 @@ class KotRequest {
     //endregion
 
     //region finisher
+
+    fun cancel(forceCancel: Boolean) {
+        try {
+            if (forceCancel || percentageThresholdForCancelling == 0
+                    || progress < percentageThresholdForCancelling) {
+                isCancelled = true
+                call?.cancel()
+                future?.cancel(true)
+                if (!isDelivered) deliverError(KotError())
+            }
+        } catch (ex: Exception) {
+            ex.printStackTrace()
+        }
+    }
+
     fun destroy() {
         downloadProgressListener = null
         jsonObjectRequestCallback = null
@@ -491,5 +512,6 @@ class KotRequest {
         destroy()
         KotRequestQueue.instance.finish(this)
     }
+
     //endregion
 }
