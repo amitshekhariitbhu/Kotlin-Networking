@@ -18,7 +18,9 @@ Kotlin Networking - An elegant networking library written in Kotlin
 
 * Kotlin Networking Library takes care of each and everything. So you don't have to do anything, just make request and listen for the response.
 
-* Networking Library for Android written in Kotlin
+* Networking Library for Android written in Kotlin.
+
+* Kotlin Networking Library is based on [Fast Android Networking](https://github.com/amitshekhariitbhu/Fast-Android-Networking).
 
 [Check out Mindorks awesome open source projects here](https://mindorks.com/open-source-projects)
 
