@@ -43,5 +43,6 @@ class KotResponse<T> {
         this.error = error
     }
 
-    fun isSuccess(): Boolean = (error == null)
+    fun isSuccess(): Boolean =
+            error == null
 }

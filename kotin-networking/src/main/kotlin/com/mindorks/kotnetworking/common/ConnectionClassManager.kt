@@ -21,7 +21,7 @@ import com.mindorks.kotnetworking.core.Core
 /**
  * Created by aamir on 30/04/17.
  */
-class ConnectionClassManager private constructor() {
+class ConnectionClassManager {
 
     private object Holder {
         val INSTANCE = ConnectionClassManager()
@@ -29,13 +29,13 @@ class ConnectionClassManager private constructor() {
 
     companion object {
 
-        private val BYTES_TO_BITS = 8
-        private val DEFAULT_SAMPLES_TO_QUALITY_CHANGE = 5
-        private val MINIMUM_SAMPLES_TO_DECIDE_QUALITY = 2
-        private val DEFAULT_POOR_BANDWIDTH = 150
-        private val DEFAULT_MODERATE_BANDWIDTH = 550
-        private val DEFAULT_GOOD_BANDWIDTH = 2000
-        private val BANDWIDTH_LOWER_BOUND: Long = 10
+        private const val BYTES_TO_BITS = 8
+        private const val DEFAULT_SAMPLES_TO_QUALITY_CHANGE = 5
+        private const val MINIMUM_SAMPLES_TO_DECIDE_QUALITY = 2
+        private const val DEFAULT_POOR_BANDWIDTH = 150
+        private const val DEFAULT_MODERATE_BANDWIDTH = 550
+        private const val DEFAULT_GOOD_BANDWIDTH = 2000
+        private const val BANDWIDTH_LOWER_BOUND: Long = 10
         val instance: ConnectionClassManager? by lazy { Holder.INSTANCE }
 
     }
@@ -84,7 +84,7 @@ class ConnectionClassManager private constructor() {
             }
             mConnectionQualityCallback?.let {
                 if (mCurrentConnectionQuality !== lastConnectionQuality) {
-                    Core.instance.executorSupplier.forMainThreadTasks()
+                    Core.executorSupplier.forMainThreadTasks()
                             .execute {
                                 mConnectionQualityCallback?.invoke(mCurrentConnectionQuality, mCurrentBandwidth)
                             }

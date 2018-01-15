@@ -159,9 +159,9 @@ class GetApiTestActivity : AppCompatActivity() {
                     println("bytesReceived ---> $bytesReceived")
                     println("isFromCache ---> $isFromCache")
                 }
-                .getAsParseResponse(User::class.java, { response, error ->
+                .getAsParseResponse<User> { response, error ->
                     println("Parsed Response $response")
-                })
+                }
 
         KotNetworking.get(ApiEndPoint.GET_JSON_OBJECT)
                 .addPathParameter("userId", "1")

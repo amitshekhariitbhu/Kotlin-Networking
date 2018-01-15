@@ -21,4 +21,4 @@ import java.io.Serializable
 /**
  * Created by amitshekhar on 01/05/17.
  */
-class Progress(var currentBytes: Long, var totalBytes: Long) : Serializable
+data class Progress(var currentBytes: Long, var totalBytes: Long) : Serializable

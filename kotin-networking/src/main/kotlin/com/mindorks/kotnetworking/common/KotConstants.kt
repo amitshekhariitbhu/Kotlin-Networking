@@ -19,15 +19,13 @@ package com.mindorks.kotnetworking.common
 /**
  * Created by amitshekhar on 01/05/17.
  */
-class KotConstants {
+object KotConstants {
 
-    companion object {
-        val UPDATE: Int = 0x01
-        val CONNECTION_ERROR = "connectionError"
-        val PARSE_ERROR = "parseError"
-        val RESPONSE_FROM_SERVER_ERROR = "responseFromServerError"
-        val REQUEST_CANCELLED_ERROR = "requestCancelledError"
-        val USER_AGENT = "User-Agent"
-    }
+    const val UPDATE: Int = 0x01
+    const val CONNECTION_ERROR = "connectionError"
+    const val PARSE_ERROR = "parseError"
+    const val RESPONSE_FROM_SERVER_ERROR = "responseFromServerError"
+    const val REQUEST_CANCELLED_ERROR = "requestCancelledError"
+    const val USER_AGENT = "User-Agent"
 
 }

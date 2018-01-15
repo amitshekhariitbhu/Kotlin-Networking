@@ -188,32 +188,32 @@ class KotRequest {
     fun getAsJSONObject(handler: (result: JSONObject?, error: KotError?) -> Unit) {
         responseType = ResponseType.JSON_OBJECT
         jsonObjectRequestCallback = handler
-        KotRequestQueue.instance.addRequest(this)
+        KotRequestQueue.addRequest(this)
     }
 
     fun getAsString(handler: (result: String?, error: KotError?) -> Unit) {
         responseType = ResponseType.STRING
         stringRequestCallback = handler
-        KotRequestQueue.instance.addRequest(this)
+        KotRequestQueue.addRequest(this)
     }
 
     fun getAsJSONArray(handler: (result: JSONArray?, error: KotError?) -> Unit) {
         responseType = ResponseType.JSON_ARRAY
         jsonArrayRequestCallback = handler
-        KotRequestQueue.instance.addRequest(this)
+        KotRequestQueue.addRequest(this)
     }
 
     fun getAsOkHttpResponse(handler: (response: Response?, error: KotError?) -> Unit) {
         this.responseType = ResponseType.OK_HTTP_RESPONSE
         this.mOkHttpResponseListener = handler
-        KotRequestQueue.instance.addRequest(this)
+        KotRequestQueue.addRequest(this)
     }
 
-    fun getAsParseResponse(type: Class<*>, handler: (response: Any?, error: KotError?) -> Unit) {
+    inline fun <reified T> getAsParseResponse(noinline handler: (response: Any?, error: KotError?) -> Unit) {
         this.responseType = ResponseType.PARSED
         this.mParsedResponseListener = handler
-        this.mType = type
-        KotRequestQueue.instance.addRequest(this)
+        this.mType = T::class.java
+        KotRequestQueue.addRequest(this)
     }
 
     fun getFormattedUrl(): String {
@@ -240,35 +240,41 @@ class KotRequest {
     }
 
     fun getRequestBody(): RequestBody {
-        if (applicationJsonString != null) {
-            if (customMediaType != null) {
-                return RequestBody.create(customMediaType, applicationJsonString)
+        when {
+            applicationJsonString != null -> {
+                if (customMediaType != null) {
+                    return RequestBody.create(customMediaType, applicationJsonString)
+                }
+                return RequestBody.create(JSON_MEDIA_TYPE, applicationJsonString)
             }
-            return RequestBody.create(JSON_MEDIA_TYPE, applicationJsonString)
-        } else if (stringBody != null) {
-            if (customMediaType != null) {
-                return RequestBody.create(customMediaType, stringBody)
+            stringBody != null -> {
+                if (customMediaType != null) {
+                    return RequestBody.create(customMediaType, stringBody)
+                }
+                return RequestBody.create(MEDIA_TYPE_MARKDOWN, stringBody)
             }
-            return RequestBody.create(MEDIA_TYPE_MARKDOWN, stringBody)
-        } else if (file != null) {
-            if (customMediaType != null) {
-                return RequestBody.create(customMediaType, file)
+            file != null -> {
+                if (customMediaType != null) {
+                    return RequestBody.create(customMediaType, file)
+                }
+                return RequestBody.create(MEDIA_TYPE_MARKDOWN, file)
             }
-            return RequestBody.create(MEDIA_TYPE_MARKDOWN, file)
-        } else if (bytes != null) {
-            if (customMediaType != null) {
-                return RequestBody.create(customMediaType, bytes)
+            bytes != null -> {
+                if (customMediaType != null) {
+                    return RequestBody.create(customMediaType, bytes)
+                }
+                return RequestBody.create(MEDIA_TYPE_MARKDOWN, bytes)
             }
-            return RequestBody.create(MEDIA_TYPE_MARKDOWN, bytes)
-        } else {
-            val builder: FormBody.Builder = FormBody.Builder()
-            try {
-                bodyParameterMap?.entries?.forEach { entry -> builder.add(entry.key, entry.value) }
-                urlEncodedFormBodyParameterMap?.entries?.forEach { entry -> builder.addEncoded(entry.key, entry.value) }
-            } catch (ex: Exception) {
-                ex.printStackTrace()
+            else -> {
+                val builder: FormBody.Builder = FormBody.Builder()
+                try {
+                    bodyParameterMap?.entries?.forEach { entry -> builder.add(entry.key, entry.value) }
+                    urlEncodedFormBodyParameterMap?.entries?.forEach { entry -> builder.addEncoded(entry.key, entry.value) }
+                } catch (ex: Exception) {
+                    ex.printStackTrace()
+                }
+                return builder.build()
             }
-            return builder.build()
         }
     }
 
@@ -308,7 +314,7 @@ class KotRequest {
 
     fun startDownload(handler: (kotError: KotError?) -> Unit) {
         downloadCallback = handler
-        KotRequestQueue.instance.addRequest(this)
+        KotRequestQueue.addRequest(this)
     }
 
     //endregion
@@ -354,9 +360,9 @@ class KotRequest {
             isDelivered = true
             if (!isCancelled) {
                 executor?.execute { mOkHttpResponseListener?.invoke(okHttpResponse, null) } ?:
-                        Core.instance.executorSupplier.forMainThreadTasks().execute { mOkHttpResponseListener?.invoke(okHttpResponse, null) }
+                        Core.executorSupplier.forMainThreadTasks().execute { mOkHttpResponseListener?.invoke(okHttpResponse, null) }
             } else {
-                val kotError: KotError = KotError()
+                val kotError = KotError()
                 kotError.errorDetail = KotConstants.REQUEST_CANCELLED_ERROR
                 kotError.errorCode = 0
                 mOkHttpResponseListener?.invoke(null, kotError)
@@ -372,9 +378,9 @@ class KotRequest {
             isDelivered = true
             if (!isCancelled) {
                 executor?.execute { deliverSuccessResponse(kotResponse) } ?:
-                        Core.instance.executorSupplier.forMainThreadTasks().execute { deliverSuccessResponse(kotResponse) }
+                        Core.executorSupplier.forMainThreadTasks().execute { deliverSuccessResponse(kotResponse) }
             } else {
-                val kotError: KotError = KotError()
+                val kotError = KotError()
                 kotError.errorDetail = KotConstants.REQUEST_CANCELLED_ERROR
                 kotError.errorCode = 0
                 deliverErrorResponse(kotError)
@@ -407,24 +413,24 @@ class KotRequest {
     fun parseResponse(response: Response): KotResponse<*>? {
         when (responseType) {
 
-            ResponseType.JSON_ARRAY -> try {
-                val json: JSONArray = JSONArray(Okio.buffer(response.body().source()).readUtf8())
-                return KotResponse.success(json)
+            ResponseType.JSON_ARRAY -> return try {
+                val json = JSONArray(Okio.buffer(response.body().source()).readUtf8())
+                KotResponse.success(json)
             } catch (e: Exception) {
-                return KotResponse.failed(KotUtils.getErrorForParse(KotError(e)))
+                KotResponse.failed(KotUtils.getErrorForParse(KotError(e)))
             }
 
-            ResponseType.STRING -> try {
-                return KotResponse.success(Okio.buffer(response.body().source()).readUtf8())
+            ResponseType.STRING -> return try {
+                KotResponse.success(Okio.buffer(response.body().source()).readUtf8())
             } catch (e: Exception) {
-                return KotResponse.failed(KotUtils.getErrorForParse(KotError(e)))
+                KotResponse.failed(KotUtils.getErrorForParse(KotError(e)))
             }
 
-            ResponseType.JSON_OBJECT -> try {
-                val json: JSONObject = JSONObject(Okio.buffer(response.body().source()).readUtf8())
-                return KotResponse.success(json)
+            ResponseType.JSON_OBJECT -> return try {
+                val json = JSONObject(Okio.buffer(response.body().source()).readUtf8())
+                KotResponse.success(json)
             } catch (e: Exception) {
-                return KotResponse.failed(KotUtils.getErrorForParse(KotError(e)))
+                KotResponse.failed(KotUtils.getErrorForParse(KotError(e)))
             }
 
             ResponseType.OK_HTTP_RESPONSE -> {
@@ -464,7 +470,7 @@ class KotRequest {
                         finish()
                     })
                 } else {
-                    Core.instance.executorSupplier.forMainThreadTasks().execute({
+                    Core.executorSupplier.forMainThreadTasks().execute({
                         downloadCallback?.invoke(null)
                         finish()
                     })
@@ -510,7 +516,7 @@ class KotRequest {
 
     fun finish() {
         destroy()
-        KotRequestQueue.instance.finish(this)
+        KotRequestQueue.finish(this)
     }
 
     //endregion

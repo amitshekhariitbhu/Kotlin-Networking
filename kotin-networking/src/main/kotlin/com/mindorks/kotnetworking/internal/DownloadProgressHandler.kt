@@ -25,7 +25,7 @@ import com.mindorks.kotnetworking.common.Progress
 /**
  * Created by amitshekhar on 01/05/17.
  */
-class DownloadProgressHandler(val progressCallback: ((bytesDownloaded: Long, totalBytes: Long) -> Unit)) : Handler(Looper.getMainLooper()) {
+class DownloadProgressHandler(private val progressCallback: ((bytesDownloaded: Long, totalBytes: Long) -> Unit)) : Handler(Looper.getMainLooper()) {
 
     override fun handleMessage(msg: Message?) {
         when (msg?.what) {

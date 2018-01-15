@@ -127,19 +127,15 @@ class KotRunnable(val request: KotRequest) : Runnable {
     }
 
     private fun executeDownloadRequest() {
-        var okHttpResponse: Response?
-        try {
-            okHttpResponse = InternalNetworking.makeDownloadRequestAndGetResponse(request)
-            if (okHttpResponse == null) {
-                deliverError(request, KotUtils.getErrorForConnection(KotError()))
-                return
-            }
 
-            if (okHttpResponse.code() >= 400) {
-                deliverError(request, KotUtils.getErrorForServerResponse(KotError(okHttpResponse), request, okHttpResponse.code()))
-                return
-            }
-            request.updateDownloadCompletion()
+        try {
+            InternalNetworking.makeDownloadRequestAndGetResponse(request)?.let {
+                if (it.code() >= 400) {
+                    deliverError(request, KotUtils.getErrorForServerResponse(KotError(it), request, it.code()))
+                    return
+                }
+                request.updateDownloadCompletion()
+            } ?: deliverError(request, KotUtils.getErrorForConnection(KotError()))
         } catch (ex: Exception) {
             ex.printStackTrace()
             deliverError(request, KotUtils.getErrorForConnection(KotError(ex)))
@@ -147,7 +143,7 @@ class KotRunnable(val request: KotRequest) : Runnable {
     }
 
     private fun deliverError(kotRequest: KotRequest, kotError: KotError) {
-        Core.instance.executorSupplier.forMainThreadTasks().execute {
+        Core.executorSupplier.forMainThreadTasks().execute {
             kotRequest.deliverError(kotError)
             kotRequest.finish()
         }

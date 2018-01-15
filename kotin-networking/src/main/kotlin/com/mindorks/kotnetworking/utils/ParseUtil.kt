@@ -23,11 +23,9 @@ import com.mindorks.kotnetworking.interfaces.Parser
  * Created by aamir on 01/05/17.
  */
 
-class ParseUtil {
-    companion object {
-        var parserFactory: Parser.Factory? = GsonParserFactory()
-        fun shutDown() {
-            parserFactory = null
-        }
+object ParseUtil {
+    var parserFactory: Parser.Factory? = GsonParserFactory()
+    fun shutDown() {
+        parserFactory = null
     }
 }

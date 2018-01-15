@@ -27,51 +27,44 @@ import com.mindorks.kotnetworking.requestbuidler.PostRequestBuilder
 /**
  * Created by amitshekhar on 30/04/17.
  */
-class KotNetworking private constructor() {
+object KotNetworking {
 
-
-    companion object {
-
-        fun initialize(context: Context) {
-
-        }
-
-        fun get(url: String): GetRequestBuilder {
-            return GetRequestBuilder(url)
-        }
-
-        fun head(url: String): GetRequestBuilder {
-            return GetRequestBuilder(url, Method.HEAD)
-        }
-
-        fun post(url: String): PostRequestBuilder {
-            return PostRequestBuilder(url)
-        }
-
-        fun put(url: String): PostRequestBuilder {
-            return PostRequestBuilder(url, Method.PUT)
-        }
-
-        fun upload(url: String): MultipartRequestBuilder {
-            return MultipartRequestBuilder(url, Method.POST)
-        }
-
-        fun download(url: String, dirPath: String, fileName: String): DownloadBuilder {
-            return DownloadBuilder(url, dirPath, fileName)
-        }
-
-        fun cancelAll() {
-            KotRequestQueue.instance.cancelAll(false)
-        }
-        fun forceCancelAll() {
-            KotRequestQueue.instance.cancelAll(true)
-        }
-
-        fun cancel(tag: Any) {
-            KotRequestQueue.instance.cancelRequestWithGivenTag(tag, false)
-        }
+    fun initialize(context: Context) {
 
     }
 
+    fun get(url: String): GetRequestBuilder {
+        return GetRequestBuilder(url)
+    }
 
+    fun head(url: String): GetRequestBuilder {
+        return GetRequestBuilder(url, Method.HEAD)
+    }
+
+    fun post(url: String): PostRequestBuilder {
+        return PostRequestBuilder(url)
+    }
+
+    fun put(url: String): PostRequestBuilder {
+        return PostRequestBuilder(url, Method.PUT)
+    }
+
+    fun upload(url: String): MultipartRequestBuilder {
+        return MultipartRequestBuilder(url, Method.POST)
+    }
+
+    fun download(url: String, dirPath: String, fileName: String): DownloadBuilder {
+        return DownloadBuilder(url, dirPath, fileName)
+    }
+
+    fun cancelAll() {
+        KotRequestQueue.cancelAll(false)
+    }
+    fun forceCancelAll() {
+        KotRequestQueue.cancelAll(true)
+    }
+
+    fun cancel(tag: Any) {
+        KotRequestQueue.cancelRequestWithGivenTag(tag, false)
+    }
 }

@@ -25,43 +25,31 @@ import java.util.concurrent.atomic.AtomicInteger
 /**
  * Created by amitshekhar on 30/04/17.
  */
-class KotRequestQueue private constructor() {
 
-    val sequenceGenerator: AtomicInteger = AtomicInteger()
-    var currentRequest: MutableSet<KotRequest> = mutableSetOf()
-
-    private object Holder {
-        val INSTANCE = KotRequestQueue()
-    }
-
-    companion object {
-        val instance: KotRequestQueue by lazy { Holder.INSTANCE }
-    }
-
+object KotRequestQueue {
+    private val sequenceGenerator: AtomicInteger = AtomicInteger()
+    val currentRequest = mutableSetOf<KotRequest>()
     fun addRequest(request: KotRequest) {
         synchronized(currentRequest) {
             try {
                 currentRequest.add(request)
             } catch (ex: Exception) {
-                ex.printStackTrace()
             }
         }
 
         try {
-            request.sequenceNumber = getSequenceNumber()
+            request.sequenceNumber = sequenceGenerator.incrementAndGet()
 
             request.future = when (request.priority) {
 
                 Priority.IMMEDIATE -> {
-                    Core.instance
-                            .executorSupplier
+                    Core.executorSupplier
                             .forImmediateNetworkTasks()
                             .submit(KotRunnable(request))
                 }
 
                 else -> {
-                    Core.instance
-                            .executorSupplier
+                    Core.executorSupplier
                             .forNetworkTasks()
                             .submit(KotRunnable(request))
                 }
@@ -72,17 +60,14 @@ class KotRequestQueue private constructor() {
         }
     }
 
-    private fun getSequenceNumber(): Int = sequenceGenerator.incrementAndGet()
-
-
     fun cancelRequestWithGivenTag(@NotNull tag: Any, forceCancel: Boolean) {
         synchronized(currentRequest) {
             cancel(object : RequestFilter {
                 override fun apply(request: KotRequest): Boolean {
-                    if (tag is String && request.tag is String) {
-                        return tag == request.tag
+                    return if (tag is String && request.tag is String) {
+                        tag == request.tag
                     } else {
-                        return tag === request.tag
+                        tag === request.tag
                     }
                 }
             }, forceCancel)
@@ -126,7 +111,6 @@ class KotRequestQueue private constructor() {
             currentRequest.remove(kotRequest)
         }
     }
-
 
     interface RequestFilter {
         fun apply(request: KotRequest): Boolean

@@ -34,19 +34,19 @@ import java.util.concurrent.TimeUnit
 /**
  * Created by amitshekhar on 01/05/17.
  */
-class InternalNetworking private constructor() {
+class InternalNetworking {
 
     companion object {
 
         var sOkHttpClient: OkHttpClient = defaultOkHttpClient()
         var userAgent: String? = null
 
-        fun defaultOkHttpClient(): OkHttpClient = OkHttpClient()
-                .newBuilder()
-                .connectTimeout(60, TimeUnit.SECONDS)
-                .readTimeout(60, TimeUnit.SECONDS)
-                .writeTimeout(60, TimeUnit.SECONDS)
-                .build()
+        private fun defaultOkHttpClient(): OkHttpClient =
+                OkHttpClient().newBuilder().apply {
+                    connectTimeout(60, TimeUnit.SECONDS)
+                    readTimeout(60, TimeUnit.SECONDS)
+                    writeTimeout(60, TimeUnit.SECONDS)
+                }.build()
 
         @Throws(KotError::class)
         fun makeSimpleRequestAndGetResponse(kotRequest: KotRequest): Response? {
@@ -100,28 +100,29 @@ class InternalNetworking private constructor() {
                 val timeTaken = System.currentTimeMillis() /*endTime*/ - startTime
                 if (okHttpResponse?.cacheResponse() == null) {
                     val finalBytes = TrafficStats.getTotalRxBytes()
-                    val diffBytes: Long?
-                    if (finalBytes == TrafficStats.UNSUPPORTED.toLong() || startBytes == TrafficStats.UNSUPPORTED.toLong()) {
-                        diffBytes = okHttpResponse?.body()?.contentLength()
-                    } else {
-                        diffBytes = finalBytes - startBytes
+                    val diffBytes: Long? = when {
+                        finalBytes == TrafficStats.UNSUPPORTED.toLong() || startBytes == TrafficStats.UNSUPPORTED.toLong() ->
+                            okHttpResponse?.body()?.contentLength()
+                        else -> finalBytes - startBytes
                     }
                     ConnectionClassManager.instance?.updateBandwidth(diffBytes, timeTaken)
 
-                    var bytesSent = -1L
-                    if (requestBody != null && requestBody.contentLength() > 0L) {
-                        bytesSent = requestBody.contentLength()
+                    val bytesSent = when {
+                        requestBody != null && requestBody.contentLength() > 0L ->
+                            requestBody.contentLength()
+                        else -> -1L
                     }
-
                     val bytesReceived = diffBytes ?: 0
                     KotUtils.sendAnalytics(kotRequest.analyticsListener, timeTaken, bytesSent, bytesReceived, false)
                 } else if (kotRequest.analyticsListener != null) {
                     if (okHttpResponse.networkResponse() == null) {
                         KotUtils.sendAnalytics(kotRequest.analyticsListener, timeTaken, 0, 0, true)
                     } else {
-                        var bytesSent = -1L
-                        if (requestBody != null && requestBody.contentLength() != 0L)
-                            bytesSent = requestBody.contentLength()
+                        val bytesSent = when{
+                            requestBody != null && requestBody.contentLength() != 0L ->
+                                requestBody.contentLength()
+                            else -> -1L
+                        }
                         KotUtils.sendAnalytics(kotRequest.analyticsListener, timeTaken, bytesSent, 0, true)
                     }
                 }
@@ -172,13 +173,10 @@ class InternalNetworking private constructor() {
                 val timeTaken = System.currentTimeMillis() /*endTime*/ - startTime
                 if (okHttpResponse?.cacheResponse() == null) {
                     val finalBytes = TrafficStats.getTotalRxBytes()
-                    val diffBytes: Long?
-                    if (finalBytes == TrafficStats.UNSUPPORTED.toLong() || startBytes == TrafficStats.UNSUPPORTED.toLong()) {
-                        diffBytes = okHttpResponse?.body()?.contentLength()
-                    } else {
-                        diffBytes = finalBytes - startBytes
+                    val diffBytes: Long? = when(TrafficStats.UNSUPPORTED.toLong()) {
+                        finalBytes, startBytes -> okHttpResponse?.body()?.contentLength()
+                        else -> finalBytes - startBytes
                     }
-
                     ConnectionClassManager.instance?.updateBandwidth(diffBytes, timeTaken)
                     val bytesReceived = diffBytes ?: 0
                     KotUtils.sendAnalytics(kotRequest.analyticsListener, timeTaken, -1, bytesReceived, false)
@@ -219,31 +217,23 @@ class InternalNetworking private constructor() {
 
                 okHttpRequest = builder.build()
 
-                if (kotRequest.okHttpClient != null) {
-                    kotRequest.call = kotRequest.okHttpClient?.newBuilder()
-                            ?.cache(sOkHttpClient.cache())?.build()?.newCall(okHttpRequest)
-                } else {
-                    kotRequest.call = sOkHttpClient.newCall(okHttpRequest)
-                }
+                kotRequest.call = kotRequest.okHttpClient?.let {
+                    it.newBuilder()?.cache(sOkHttpClient.cache())?.build()?.newCall(okHttpRequest)
+                } ?: sOkHttpClient.newCall(okHttpRequest)
 
                 val startTime = System.currentTimeMillis()
                 okHttpResponse = kotRequest.call?.execute()
                 val timeTaken = System.currentTimeMillis() /*endTime*/ - startTime
 
                 if (kotRequest.analyticsListener != null) {
-                    if (okHttpResponse?.cacheResponse() == null) {
-                        val byteReceived = okHttpResponse?.body()?.contentLength()
+                    okHttpResponse?.cacheResponse()?.let {
+                        val byteReceived = it.body()?.contentLength()
                         KotUtils.sendAnalytics(kotRequest.analyticsListener, timeTaken,
                                 requestBodyLength, byteReceived ?: 0, false)
-                    } else {
-                        if (okHttpResponse.networkResponse() == null) {
-                            KotUtils.sendAnalytics(kotRequest.analyticsListener, timeTaken, 0, 0, true)
-                        } else {
-                            KotUtils.sendAnalytics(kotRequest.analyticsListener, timeTaken, requestBodyLength, 0, true)
-                        }
-                    }
+                    } ?: okHttpResponse?.networkResponse()?.let {
+                        KotUtils.sendAnalytics(kotRequest.analyticsListener, timeTaken, requestBodyLength, 0, true)
+                    } ?: KotUtils.sendAnalytics(kotRequest.analyticsListener, timeTaken, 0, 0, true)
                 }
-
             } catch (ioe: IOException) {
                 throw KotError(ioe)
             }
@@ -251,12 +241,13 @@ class InternalNetworking private constructor() {
             return okHttpResponse
         }
 
-        fun addHeadersToRequestBuilder(builder: Request.Builder, kotRequest: KotRequest) {
-            if (kotRequest.userAgent != null) {
-                builder.addHeader(KotConstants.USER_AGENT, kotRequest.userAgent)
-            } else if (userAgent != null) {
-                kotRequest.userAgent = userAgent
-                builder.addHeader(KotConstants.USER_AGENT, userAgent)
+        private fun addHeadersToRequestBuilder(builder: Request.Builder, kotRequest: KotRequest) {
+            when {
+                kotRequest.userAgent != null -> builder.addHeader(KotConstants.USER_AGENT, kotRequest.userAgent)
+                userAgent != null -> {
+                    kotRequest.userAgent = userAgent
+                    builder.addHeader(KotConstants.USER_AGENT, userAgent)
+                }
             }
             val requestHeaders = kotRequest.getHeaders()
             builder.headers(requestHeaders)
